@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiques des retards{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-chart-column text-brand-600"></i>
+        Retards — Statistiques
+    </h1>
+    <a href="{% url 'vie_scolaire:retard_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600">
+        <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à l'historique
+    </a>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div class="bg-white rounded-2xl card-shadow p-4 text-center">
+        <div class="text-2xl font-bold text-slate-900">{{ total }}</div>
+        <div class="text-xs text-slate-500 mt-1">Total</div>
+    </div>
+    <div class="bg-white rounded-2xl card-shadow p-4 text-center">
+        <div class="text-2xl font-bold text-amber-600">{{ pending }}</div>
+        <div class="text-xs text-slate-500 mt-1">En attente</div>
+    </div>
+    <div class="bg-white rounded-2xl card-shadow p-4 text-center">
+        <div class="text-2xl font-bold text-emerald-600">{{ justified }}</div>
+        <div class="text-xs text-slate-500 mt-1">Justifiés</div>
+    </div>
+    <div class="bg-white rounded-2xl card-shadow p-4 text-center">
+        <div class="text-2xl font-bold text-rose-600">{{ unjustified }}</div>
+        <div class="text-xs text-slate-500 mt-1">Non justifiés</div>
+    </div>
+    <div class="bg-white rounded-2xl card-shadow p-4 text-center">
+        <div class="text-2xl font-bold text-slate-900">{{ avg_duration }} min</div>
+        <div class="text-xs text-slate-500 mt-1">Durée moyenne</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+        <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm">Par classe</div>
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                    <th class="text-left px-6 py-2">Classe</th>
+                    <th class="text-left px-6 py-2">Nb retards</th>
+                    <th class="text-left px-6 py-2">Durée moy.</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for row in by_class %}
+                    <tr>
+                        <td class="px-6 py-2">{{ row.student__class_group__name|default:"—" }}</td>
+                        <td class="px-6 py-2">{{ row.count }}</td>
+                        <td class="px-6 py-2">{{ row.avg_duration|floatformat:1 }} min</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3" class="px-6 py-6 text-center text-slate-500">Aucune donnée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+        <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm">Par motif</div>
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                    <th class="text-left px-6 py-2">Motif</th>
+                    <th class="text-left px-6 py-2">Nb retards</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for row in by_motif %}
+                    <tr>
+                        <td class="px-6 py-2">{{ row.label }}</td>
+                        <td class="px-6 py-2">{{ row.count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="2" class="px-6 py-6 text-center text-slate-500">Aucune donnée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden mt-6">
+    <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm">Élèves les plus concernés</div>
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+                <th class="text-left px-6 py-2">Élève</th>
+                <th class="text-left px-6 py-2">Nb retards</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for row in top_students %}
+                <tr>
+                    <td class="px-6 py-2">{{ row.student__user__first_name }} {{ row.student__user__last_name }}</td>
+                    <td class="px-6 py-2">{{ row.count }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="2" class="px-6 py-6 text-center text-slate-500">Aucune donnée.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

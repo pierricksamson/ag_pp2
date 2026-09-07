@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'schedule',
     'attendance',
     'messaging',
+    'vie_scolaire',
 ]
 
 AUTH_USER_MODEL = 'users.User'

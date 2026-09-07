@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Retards{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-clock text-amber-600"></i>
+        Retards — Historique
+    </h1>
+    {% if can_manage %}
+        <div class="flex gap-2">
+            <a href="{% url 'vie_scolaire:retard_stats' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <i class="fa-solid fa-chart-column"></i> Statistiques
+            </a>
+            <a href="{% url 'vie_scolaire:retard_declare' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm">
+                <i class="fa-solid fa-plus"></i> Déclarer un retard
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% if can_manage %}
+<form method="get" class="bg-white rounded-2xl card-shadow p-4 mb-5 flex flex-wrap gap-3 items-end">
+    <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Classe</label>
+        <select name="class_group" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+            <option value="">Toutes</option>
+            {% for c in class_groups %}
+                <option value="{{ c.id }}" {% if filters.class_group == c.id|stringformat:"s" %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Statut</label>
+        <select name="status" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+            <option value="">Tous</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900">
+        <i class="fa-solid fa-filter mr-1"></i>Filtrer
+    </button>
+</form>
+{% endif %}
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+                <th class="text-left px-6 py-3">Élève</th>
+                <th class="text-left px-6 py-3">Date</th>
+                <th class="text-left px-6 py-3">Durée</th>
+                <th class="text-left px-6 py-3">Motif</th>
+                <th class="text-left px-6 py-3">Validation</th>
+                {% if can_manage %}<th class="text-left px-6 py-3">Action</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for r in retards %}
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-3">
+                        <div class="font-medium text-slate-900">{{ r.student.user.get_full_name }}</div>
+                        <div class="text-xs text-slate-500">{{ r.student.class_group|default:"—" }}</div>
+                    </td>
+                    <td class="px-6 py-3">{{ r.date|date:"d/m/Y" }}</td>
+                    <td class="px-6 py-3">{{ r.duration_minutes }} min</td>
+                    <td class="px-6 py-3">
+                        {{ r.get_motif_display }}
+                        {% if r.motif_detail %}<div class="text-xs text-slate-400">{{ r.motif_detail }}</div>{% endif %}
+                    </td>
+                    <td class="px-6 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                            {% if r.status == 'JUSTIFIED' %}bg-emerald-100 text-emerald-700
+                            {% elif r.status == 'UNJUSTIFIED' %}bg-rose-100 text-rose-700
+                            {% else %}bg-amber-100 text-amber-700{% endif %}">
+                            {{ r.get_status_display }}
+                        </span>
+                    </td>
+                    {% if can_manage %}
+                    <td class="px-6 py-3">
+                        {% if r.is_pending %}
+                            <form method="post" action="{% url 'vie_scolaire:retard_validate' r.id %}" class="flex items-center gap-1.5">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" name="decision" value="justify" class="px-2.5 py-1 bg-emerald-600 text-white rounded-md text-xs font-medium hover:bg-emerald-700">
+                                    <i class="fa-solid fa-check"></i> Justifier
+                                </button>
+                                <button type="submit" name="decision" value="unjustify" class="px-2.5 py-1 bg-rose-600 text-white rounded-md text-xs font-medium hover:bg-rose-700">
+                                    <i class="fa-solid fa-xmark"></i> Non justifié
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="text-xs text-slate-400">—</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Aucun retard enregistré.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
