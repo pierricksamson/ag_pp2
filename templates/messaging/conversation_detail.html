@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Conversation{% endblock %}
+
+{% block content %}
+<div x-data="conversationThread({
+    sendUrl: '{% url 'messaging:send_message_ajax' conversation.id %}',
+    userId: {{ request.user.id }}
+})" class="max-w-3xl mx-auto">
+
+    <div class="mb-4">
+        <a href="{% url 'messaging:inbox' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à la messagerie
+        </a>
+        <h1 class="text-xl font-bold text-slate-900">
+            {% for u in others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </h1>
+        {% if conversation.subject %}<p class="text-slate-500 text-sm">{{ conversation.subject }}</p>{% endif %}
+    </div>
+
+    <div class="bg-white rounded-2xl card-shadow p-6 space-y-4 mb-4 max-h-[60vh] overflow-y-auto" x-ref="thread">
+        <template x-for="m in messages" :key="m.id">
+            <div class="flex" :class="m.sender_id === userId ? 'justify-end' : 'justify-start'">
+                <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm"
+                     :class="m.sender_id === userId ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'">
+                    <div class="font-semibold text-xs mb-0.5" x-show="m.sender_id !== userId" x-text="m.sender"></div>
+                    <div x-text="m.body" class="whitespace-pre-wrap"></div>
+                    <div class="text-[10px] opacity-70 mt-1 text-right" x-text="m.sent_at"></div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <form @submit.prevent="send()" class="bg-white rounded-2xl card-shadow p-3 flex items-end gap-2">
+        <textarea x-model="draft" @keydown.enter.exact.prevent="send()" rows="2" placeholder="Votre message…"
+                  class="flex-1 px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 text-sm resize-none"></textarea>
+        <button type="submit" :disabled="sending || !draft.trim()"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm disabled:opacity-50">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function conversationThread(opts) {
+    return {
+        sendUrl: opts.sendUrl,
+        userId: opts.userId,
+        draft: '',
+        sending: false,
+        messages: [
+            {% for m in message_list %}
+            {
+                id: {{ m.id }},
+                sender: "{{ m.sender.get_full_name|default:m.sender.email|escapejs }}",
+                sender_id: {{ m.sender_id }},
+                body: "{{ m.body|escapejs }}",
+                sent_at: "{{ m.sent_at|date:'d/m/Y H:i' }}",
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+
+        init() {
+            this.scrollToBottom();
+        },
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                if (this.$refs.thread) this.$refs.thread.scrollTop = this.$refs.thread.scrollHeight;
+            });
+        },
+
+        async send() {
+            const body = this.draft.trim();
+            if (!body || this.sending) return;
+            this.sending = true;
+            try {
+                const fd = new FormData();
+                fd.append('body', body);
+                fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}');
+                const res = await fetch(this.sendUrl, {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    this.messages.push(data.message);
+                    this.draft = '';
+                    this.scrollToBottom();
+                }
+            } finally {
+                this.sending = false;
+            }
+        },
+    };
+}
+</script>
+{% endblock %}

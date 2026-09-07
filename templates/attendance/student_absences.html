@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Absences — {{ student.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-user-clock text-brand-600"></i>
+        Absences — {{ student.user.get_full_name }}
+    </h1>
+    {% if children %}
+        <div class="mt-3 flex flex-wrap gap-2">
+            {% for c in children %}
+                <a href="{% url 'attendance:student_absences' c.id %}"
+                   class="px-3 py-1.5 rounded-full text-xs font-medium {% if c.id == student.id %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                    {{ c.user.get_full_name }}
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+                <th class="text-left px-6 py-3">Séance</th>
+                <th class="text-left px-6 py-3">Statut</th>
+                <th class="text-left px-6 py-3">Justifié</th>
+                <th class="text-left px-6 py-3">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for r in records %}
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-3">
+                        <div class="font-medium text-slate-900">{{ r.session.subject.name }}</div>
+                        <div class="text-xs text-slate-500">{{ r.session.get_day_display }} {{ r.session.start_time|time:"H:i" }} — {{ r.session.teacher.user.get_full_name }}</div>
+                    </td>
+                    <td class="px-6 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                            {% if r.status == 'PRESENT' %}bg-emerald-100 text-emerald-700
+                            {% elif r.status == 'ABSENT' %}bg-rose-100 text-rose-700
+                            {% elif r.status == 'LATE' %}bg-amber-100 text-amber-700
+                            {% else %}bg-slate-100 text-slate-600{% endif %}">
+                            {{ r.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-3">
+                        {% if r.justified %}
+                            <span class="text-emerald-600 text-xs font-semibold"><i class="fa-solid fa-check"></i> Justifié</span>
+                        {% elif r.needs_justification %}
+                            <span class="text-rose-600 text-xs font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> Non justifié</span>
+                        {% else %}
+                            <span class="text-slate-400 text-xs">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-3">
+                        {% if can_justify and r.needs_justification and not r.justified %}
+                            <form method="post" action="{% url 'attendance:justify_absence' r.id %}" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="text" name="reason" maxlength="1000" placeholder="Motif…" required
+                                       class="px-2 py-1 border border-slate-300 rounded-md text-xs">
+                                <button type="submit" class="px-3 py-1 bg-brand-600 text-white rounded-md text-xs font-medium hover:bg-brand-700">
+                                    Justifier
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="px-6 py-12 text-center text-slate-500">Aucune absence enregistrée.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

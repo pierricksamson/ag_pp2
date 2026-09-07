@@ -9,4 +9,6 @@ urlpatterns = [
     path("", include("users.urls", namespace="users")),
     path("academics/", include("academics.urls", namespace="academics")),
     path("schedule/", include("schedule.urls", namespace="schedule")),
+    path("attendance/", include("attendance.urls", namespace="attendance")),
+    path("messaging/", include("messaging.urls", namespace="messaging")),
 ]

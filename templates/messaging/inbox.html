@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Messagerie{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-envelope text-brand-600"></i>
+        Messagerie
+    </h1>
+    <a href="{% url 'messaging:new_conversation' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+        <i class="fa-solid fa-pen"></i> Nouveau message
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden divide-y divide-slate-100">
+    {% for row in rows %}
+        <a href="{% url 'messaging:conversation_detail' row.conversation.id %}"
+           class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition">
+            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold shrink-0">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-900 truncate">
+                        {% for u in row.others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </span>
+                    {% if row.conversation.subject %}
+                        <span class="text-xs text-slate-400 truncate">— {{ row.conversation.subject }}</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-slate-500 truncate">
+                    {% if row.last_message %}{{ row.last_message.body|truncatechars:80 }}{% else %}Aucun message.{% endif %}
+                </p>
+            </div>
+            <div class="text-right shrink-0">
+                {% if row.last_message %}
+                    <div class="text-xs text-slate-400">{{ row.last_message.sent_at|date:"d/m H:i" }}</div>
+                {% endif %}
+                {% if row.unread %}
+                    <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-600 text-white text-[11px] font-bold mt-1">{{ row.unread }}</span>
+                {% endif %}
+            </div>
+        </a>
+    {% empty %}
+        <div class="px-6 py-12 text-center text-slate-500">
+            <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-3 block"></i>
+            Aucune conversation pour le moment.
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

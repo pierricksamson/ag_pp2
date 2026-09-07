@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Faire l'appel — {{ session.display_label }}{% endblock %}
+
+{% block content %}
+<div x-data="attendanceEntry({
+    saveUrl: '{% url 'attendance:attendance_save_ajax' 0 %}',
+    bulkUrl: '{% url 'attendance:attendance_save_all' session.id %}',
+    rows: {{ records|length }}
+})" x-init="init()" class="pb-32">
+
+    <div class="mb-6">
+        <a href="{% url 'schedule:weekly' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à l'emploi du temps
+        </a>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+            <i class="fa-solid fa-clipboard-user text-brand-600"></i>
+            Faire l'appel — {{ session.display_label }}
+        </h1>
+        <p class="text-slate-500 text-sm mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span><i class="fa-solid fa-calendar-day mr-1 text-slate-400"></i>{{ session.get_day_display }} {{ session.start_time|time:"H:i" }}–{{ session.end_time|time:"H:i" }}</span>
+            {% if session.room %}<span><i class="fa-solid fa-location-dot mr-1 text-slate-400"></i>{{ session.room.name }}</span>{% endif %}
+        </p>
+    </div>
+
+    {# Indicateurs synthétiques #}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Présents</div>
+            <div class="text-3xl font-extrabold text-emerald-600 mt-2" x-text="stats.present"></div>
+        </div>
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Absents</div>
+            <div class="text-3xl font-extrabold text-rose-600 mt-2" x-text="stats.absent"></div>
+        </div>
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Retards</div>
+            <div class="text-3xl font-extrabold text-amber-600 mt-2" x-text="stats.late"></div>
+        </div>
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Taux de présence</div>
+            <div class="text-3xl font-extrabold text-brand-600 mt-2" x-text="stats.total ? stats.attendance_rate + '%' : '—'"></div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'attendance:attendance_save_all' session.id %}" @submit.prevent="saveAll()">
+        {% csrf_token %}
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h2 class="font-semibold text-slate-900">Liste d'appel</h2>
+                <p class="text-xs text-slate-500 mt-1">Changez le statut de chaque élève, il est sauvegardé automatiquement à la sortie du champ.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                        <tr>
+                            <th class="text-left px-6 py-3 w-10">#</th>
+                            <th class="text-left px-6 py-3">Élève</th>
+                            <th class="text-left px-6 py-3 w-48">Statut</th>
+                            <th class="text-left px-6 py-3 w-32">Retard (min)</th>
+                            <th class="text-left px-6 py-3">Motif</th>
+                            <th class="text-left px-6 py-3 w-24">État</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for r in records %}
+                            <tr class="hover:bg-slate-50 transition"
+                                x-data="attendanceRow({
+                                    id: {{ r.id }},
+                                    initialStatus: '{{ r.status }}',
+                                    initialMinutesLate: {{ r.minutes_late }},
+                                    initialReason: '{{ r.reason|escapejs }}'
+                                })"
+                                :class="rowClass">
+                                <td class="px-6 py-2 text-xs text-slate-400 font-mono">{{ forloop.counter }}</td>
+                                <td class="px-6 py-2">
+                                    <div class="font-medium text-slate-900">{{ r.student.user.get_full_name }}</div>
+                                    <div class="text-[11px] text-slate-500">{{ r.student.student_number }}</div>
+                                </td>
+                                <td class="px-6 py-2">
+                                    <select x-model="status"
+                                            name="status_{{ r.id }}"
+                                            @change="onChange()"
+                                            class="w-full px-2 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white text-sm">
+                                        {% for value, label in status_choices %}
+                                            <option value="{{ value }}" {% if r.status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="px-6 py-2">
+                                    <input type="number" min="0" x-model="minutesLate" @input="onChange()"
+                                           name="minutes_late_{{ r.id }}" x-show="status === 'LATE'"
+                                           class="w-20 px-2 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 text-center">
+                                </td>
+                                <td class="px-6 py-2">
+                                    <input type="text" x-model="reason" @input="onChange()"
+                                           name="reason_{{ r.id }}" maxlength="255" placeholder="Motif libre…"
+                                           class="w-full px-2 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 text-sm">
+                                </td>
+                                <td class="px-6 py-2 text-center">
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full" :class="stateClass" x-html="stateIcon"></span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Aucun élève.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+                <div class="text-xs text-slate-500">
+                    <span x-text="dirtyCount"></span> saisie(s) modifiée(s) · <span x-text="savedCount"></span> sauvegardée(s)
+                </div>
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span x-text="savingAll ? 'Sauvegarde…' : 'Sauvegarder tout l\'appel'"></span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ---------- Alpine : composant principal ---------- */
+function attendanceEntry(opts) {
+    return {
+        saveUrlTemplate: opts.saveUrl,
+        bulkUrl: opts.bulkUrl,
+        savingAll: false,
+        stats: {
+            total: {{ stats.total }},
+            present: {{ stats.present }},
+            absent: {{ stats.absent }},
+            late: {{ stats.late }},
+            excused: {{ stats.excused }},
+            attendance_rate: {{ stats.attendance_rate }},
+        },
+
+        get dirtyCount() {
+            let n = 0;
+            document.querySelectorAll('[x-data^="attendanceRow"]').forEach(el => {
+                if (el._x_dataStack && el._x_dataStack[0] && el._x_dataStack[0].isDirty) n++;
+            });
+            return n;
+        },
+        get savedCount() {
+            let n = 0;
+            document.querySelectorAll('[x-data^="attendanceRow"]').forEach(el => {
+                if (el._x_dataStack && el._x_dataStack[0] && el._x_dataStack[0].saved) n++;
+            });
+            return n;
+        },
+
+        init() {
+            window.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    this.saveAll();
+                }
+            });
+        },
+
+        updateStats(payload) {
+            if (!payload || !payload.stats) return;
+            this.stats = Object.assign({}, this.stats, payload.stats);
+        },
+
+        async saveAll() {
+            this.savingAll = true;
+            try {
+                const rows = document.querySelectorAll('[x-data^="attendanceRow"]');
+                const promises = [];
+                rows.forEach(el => {
+                    if (el._x_dataStack && el._x_dataStack[0]) {
+                        promises.push(el._x_dataStack[0].save(true));
+                    }
+                });
+                await Promise.all(promises);
+            } finally {
+                this.savingAll = false;
+            }
+        },
+    };
+}
+
+/* ---------- Alpine : composant ligne ---------- */
+function attendanceRow(opts) {
+    return {
+        id: opts.id,
+        status: opts.initialStatus,
+        minutesLate: opts.initialMinutesLate,
+        reason: opts.initialReason,
+        state: 'idle', // idle | dirty | saving | saved | error
+        isDirty: false,
+        saved: false,
+        _saveToken: 0,
+
+        get rowClass() {
+            if (this.state === 'error') return 'bg-rose-50';
+            if (this.state === 'saving') return 'bg-amber-50';
+            if (this.state === 'saved') return 'bg-emerald-50';
+            if (this.state === 'dirty') return 'bg-amber-50/30';
+            return '';
+        },
+        get stateClass() {
+            switch (this.state) {
+                case 'dirty':   return 'bg-amber-100 text-amber-700';
+                case 'saving':  return 'bg-brand-100 text-brand-700';
+                case 'saved':   return 'bg-emerald-100 text-emerald-700';
+                case 'error':   return 'bg-rose-100 text-rose-700';
+                default:        return 'bg-slate-100 text-slate-400';
+            }
+        },
+        get stateIcon() {
+            switch (this.state) {
+                case 'dirty':  return '<i class="fa-solid fa-pen text-xs"></i>';
+                case 'saving': return '<i class="fa-solid fa-spinner fa-spin text-xs"></i>';
+                case 'saved':  return '<i class="fa-solid fa-check text-xs"></i>';
+                case 'error':  return '<i class="fa-solid fa-triangle-exclamation text-xs"></i>';
+                default:       return '<i class="fa-solid fa-minus text-[10px]"></i>';
+            }
+        },
+
+        onChange() {
+            this.isDirty = true;
+            this.state = 'dirty';
+            this._commit();
+        },
+
+        async _commit() {
+            this.state = 'saving';
+            const token = ++this._saveToken;
+            const root = this.$root.closest('[x-data^="attendanceEntry"]');
+            const url = root._x_dataStack[0].saveUrlTemplate.replace(/0\/$/, this.id + '/');
+            try {
+                const fd = new FormData();
+                fd.append('status', this.status || '');
+                fd.append('minutes_late', this.minutesLate || 0);
+                fd.append('reason', this.reason || '');
+                fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                const res = await fetch(url, {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (token !== this._saveToken) return;
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || 'save_failed');
+                if (root && root._x_dataStack && root._x_dataStack[0]) {
+                    root._x_dataStack[0].updateStats(data);
+                }
+                this.isDirty = false;
+                this.saved = true;
+                this.state = 'saved';
+                setTimeout(() => { if (this.state === 'saved') this.state = 'idle'; }, 1500);
+            } catch (err) {
+                this.state = 'error';
+            }
+        },
+
+        save(force = false) {
+            if (!force && !this.isDirty) return Promise.resolve();
+            return this._commit();
+        },
+    };
+}
+</script>
+{% endblock %}

@@ -143,6 +143,11 @@
                                         <i class="fa-solid fa-users-rectangle"></i> {{ b.classes }}
                                     </div>
                                 {% endif %}
+                                {% if role == "teacher" or role == "admin" %}
+                                    <a href="{% url 'attendance:take_attendance' b.session.id %}" class="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100">
+                                        <i class="fa-solid fa-clipboard-user"></i> Faire l'appel
+                                    </a>
+                                {% endif %}
                             </div>
                         {% endif %}
                     {% endfor %}

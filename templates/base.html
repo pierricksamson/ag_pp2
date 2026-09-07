@@ -100,6 +100,9 @@
               <a href="{% url 'academics:evaluation_create' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-plus mr-1.5"></i>Nouvelle évaluation
               </a>
+              <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+              </a>
             {% elif user.is_student %}
               <a href="{% url 'users:dashboard_student' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_student' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
@@ -109,6 +112,14 @@
               </a>
               <a href="{% url 'academics:grades' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'grades' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-chart-line mr-1.5"></i>Mes notes
+              </a>
+              {% if user.student_profile %}
+              <a href="{% url 'attendance:student_absences' user.student_profile.id %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'attendance' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-user-clock mr-1.5"></i>Mes absences
+              </a>
+              {% endif %}
+              <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
               </a>
             {% elif user.is_parent %}
               <a href="{% url 'users:dashboard_parent' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_parent' %}text-brand-600 border-brand-500{% endif %}">
@@ -120,6 +131,16 @@
               <a href="{% url 'academics:grades' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'grades' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-chart-line mr-1.5"></i>Notes de mes enfants
               </a>
+              {% with first_child=user.parent_profile.children.first %}
+              {% if first_child %}
+              <a href="{% url 'attendance:student_absences' first_child.id %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'attendance' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-user-clock mr-1.5"></i>Absences de mes enfants
+              </a>
+              {% endif %}
+              {% endwith %}
+              <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+              </a>
             {% elif user.is_admin %}
               <a href="{% url 'users:dashboard_admin' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
@@ -129,6 +150,9 @@
               </a>
               <a href="{% url 'academics:evaluation_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-clipboard-check mr-1.5"></i>Évaluations
+              </a>
+              <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
               </a>
             {% endif %}
           </div>
