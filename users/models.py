@@ -105,6 +105,17 @@ class User(AbstractUser):
         return f"{full_name} ({self.get_role_display()})" if full_name else self.email
 
     # ----- Helpers de rôle -----
+    STAFF_ROLES = (Role.ADMIN, Role.TEACHER)
+
+    @property
+    def is_staff_member(self) -> bool:
+        """Personnel (professeurs, administration, direction, vie scolaire…).
+
+        Le chat est réservé à ce périmètre : élèves, parents et tuteurs
+        légaux en sont exclus (ils gardent l'accès au mail).
+        """
+        return self.role in self.STAFF_ROLES or self.is_superuser
+
     @property
     def is_admin(self) -> bool:
         return self.role == Role.ADMIN or self.is_superuser

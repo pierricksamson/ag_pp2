@@ -7,6 +7,8 @@ app_name = "messaging"
 urlpatterns = [
     path("", views.inbox, name="inbox"),
     path("new/", views.new_conversation, name="new_conversation"),
+    path("chat/", views.chat_list, name="chat_list"),
+    path("chat/new/", views.new_chat, name="new_chat"),
     path("<int:conversation_id>/", views.conversation_detail, name="conversation_detail"),
     path("<int:conversation_id>/send/", views.send_message_ajax, name="send_message_ajax"),
 ]

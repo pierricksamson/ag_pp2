@@ -1,7 +1,18 @@
 from django.db import models
 
 
+class ConversationKind(models.TextChoices):
+    MAIL = "MAIL", "Mail"
+    CHAT = "CHAT", "Chat"
+
+
 class Conversation(models.Model):
+    kind = models.CharField(
+        max_length=4,
+        choices=ConversationKind.choices,
+        default=ConversationKind.MAIL,
+        db_index=True,
+    )
     participants = models.ManyToManyField(
         "users.User", related_name="conversations"
     )
@@ -10,6 +21,10 @@ class Conversation(models.Model):
 
     def __str__(self):
         return self.subject or f"Conversation #{self.pk}"
+
+    @property
+    def is_group(self) -> bool:
+        return self.participants.count() > 2
 
 
 class Message(models.Model):

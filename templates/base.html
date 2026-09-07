@@ -103,6 +103,9 @@
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
               </a>
+              <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
+                <i class="fa-solid fa-comments mr-1.5"></i>Chat
+              </a>
             {% elif user.is_student %}
               <a href="{% url 'users:dashboard_student' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_student' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
@@ -153,6 +156,9 @@
               </a>
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+              </a>
+              <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
+                <i class="fa-solid fa-comments mr-1.5"></i>Chat
               </a>
             {% endif %}
           </div>
