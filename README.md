@@ -1,4 +1,4 @@
-# Ademi — Espace scolaire
+# Espace scolaire
 
 Application web Django pour gérer un établissement scolaire, de l'école
 primaire aux études supérieures. L'authentification se fait par **email**
