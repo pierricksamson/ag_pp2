@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+{% load academic_extras %}
+
+{% block title %}Saisie des notes — {{ evaluation.title }}{% endblock %}
+
+{% block content %}
+<div x-data="gradeEntry({
+    saveUrl: '{% url 'academics:grade_save_ajax' 0 %}',
+    bulkUrl: '{% url 'academics:evaluation_save_all' evaluation.id %}',
+    csrfToken: '{{ csrf_token }}',
+    rows: {{ grades|length }}
+})" x-init="init()" class="pb-32">
+
+    <div class="mb-6">
+        <a href="{% url 'academics:evaluation_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à la liste
+        </a>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                    {{ evaluation.title }}
+                    <span class="text-xs font-semibold px-2 py-1 rounded bg-slate-100 text-slate-600">{{ evaluation.subject.code }}</span>
+                </h1>
+                <p class="text-slate-500 text-sm mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span><i class="fa-solid fa-users-rectangle mr-1 text-slate-400"></i>{{ evaluation.class_group }}</span>
+                    <span><i class="fa-solid fa-calendar-days mr-1 text-slate-400"></i>{{ evaluation.term }}</span>
+                    <span><i class="fa-solid fa-calendar-day mr-1 text-slate-400"></i>{{ evaluation.date|date:"d/m/Y" }}</span>
+                    <span><i class="fa-solid fa-sliders mr-1 text-slate-400"></i>Coef. {{ evaluation.coefficient }}</span>
+                    <span><i class="fa-solid fa-arrow-up-wide-short mr-1 text-slate-400"></i>/ {{ evaluation.scale_max }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {# Indicateurs synthétiques #}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="flex items-center justify-between">
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Moyenne de classe</div>
+                <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></span>
+            </div>
+            <div class="text-3xl font-extrabold text-brand-600 mt-2" x-text="formatAverage(stats.average) + (stats.average !== null ? '/{{ evaluation.scale_max }}' : '')"></div>
+        </div>
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="flex items-center justify-between">
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Note min</div>
+                <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-arrow-down"></i></span>
+            </div>
+            <div class="text-3xl font-extrabold text-slate-700 mt-2" x-text="stats.min !== null ? stats.min.toFixed(2) : '—'"></div>
+        </div>
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="flex items-center justify-between">
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Note max</div>
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-arrow-up"></i></span>
+            </div>
+            <div class="text-3xl font-extrabold text-slate-700 mt-2" x-text="stats.max !== null ? stats.max.toFixed(2) : '—'"></div>
+        </div>
+        <div class="bg-white rounded-2xl card-shadow p-5">
+            <div class="flex items-center justify-between">
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Taux de présence</div>
+                <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-user-check"></i></span>
+            </div>
+            <div class="text-3xl font-extrabold text-emerald-600 mt-2">
+                <span x-text="stats.total ? stats.attendance_rate + '%' : '—'">{% if stats.total %}{{ stats.attendance_rate }}%{% else %}—{% endif %}</span>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">
+                <span x-text="stats.present">{% if stats.present is not None %}{{ stats.present }}{% endif %}</span> présent(s) /
+                <span x-text="stats.total">{% if stats.total is not None %}{{ stats.total }}{% endif %}</span> élève(s)
+            </div>
+        </div>
+    </div>
+
+    <form method="post" action="{% url 'academics:evaluation_save_all' evaluation.id %}" @submit.prevent="saveAll()">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="font-semibold text-slate-900">Saisie rapide</h2>
+                    <p class="text-xs text-slate-500">
+                        Tapez la note puis <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Entrée</kbd> ou <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Tab</kbd> pour passer à l'élève suivant.
+                        Raccourcis : <kbd class="px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-mono">ABS</kbd> = absent ·
+                        <kbd class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-mono">DISP</kbd> = dispensé ·
+                        <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">NR</kbd> = non rendu.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="inline-flex items-center gap-2 text-xs text-slate-600">
+                        <input type="checkbox" x-model="autosave" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                        Sauvegarde automatique
+                    </label>
+                    <span class="text-xs px-2.5 py-1 rounded-full"
+                          :class="saveBadge.class"
+                          x-text="saveBadge.text"
+                          x-show="saveBadge.text"
+                          x-transition>
+                    </span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 sticky top-0 z-10">
+                        <tr>
+                            <th class="text-left px-6 py-3 w-10">#</th>
+                            <th class="text-left px-6 py-3">Élève</th>
+                            <th class="text-left px-6 py-3 w-32">Note / {{ evaluation.scale_max }}</th>
+                            <th class="text-left px-6 py-3 w-40">Statut</th>
+                            <th class="text-left px-6 py-3">Commentaire</th>
+                            <th class="text-left px-6 py-3 w-24">État</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for g in grades %}
+                            <tr class="hover:bg-slate-50 transition"
+                                x-data="gradeRow({
+                                    id: {{ g.id }},
+                                    initialValue: {% if g.value is not None %}'{{ g.value|stringformat:'f' }}'{% else %}''{% endif %},
+                                    initialStatus: '{{ g.status }}',
+                                    initialComment: '{{ g.comment|escapejs }}',
+                                    max: {{ evaluation.scale_max|stringformat:'f' }}
+                                })"
+                                :class="rowClass">
+                                <td class="px-6 py-2 text-xs text-slate-400 font-mono">{{ forloop.counter }}</td>
+                                <td class="px-6 py-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[11px] font-bold">
+                                            {{ g.student.user.first_name|slice:":1" }}{{ g.student.user.last_name|slice:":1" }}
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-slate-900 leading-tight">{{ g.student.user.get_full_name }}</div>
+                                            <div class="text-[11px] text-slate-500">{{ g.student.student_number }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-2">
+                                    <input type="text"
+                                           inputmode="decimal"
+                                           x-ref="valueInput"
+                                           x-model="value"
+                                           @input="onInput()"
+                                           @keydown="onKey($event)"
+                                           name="value_{{ g.id }}"
+                                           maxlength="6"
+                                           placeholder="—"
+                                           autocomplete="off"
+                                           class="w-24 px-2 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-center font-semibold tabular-nums">
+                                </td>
+                                <td class="px-6 py-2">
+                                    <select x-model="status"
+                                            name="status_{{ g.id }}"
+                                            @change="onStatusChange()"
+                                            class="w-full px-2 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white text-sm">
+                                        {% for value, label in status_choices %}
+                                            <option value="{{ value }}" {% if g.status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="px-6 py-2">
+                                    <input type="text"
+                                           x-model="comment"
+                                           @input="onComment()"
+                                           name="comment_{{ g.id }}"
+                                           maxlength="255"
+                                           placeholder="Appréciation…"
+                                           class="w-full px-2 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm">
+                                </td>
+                                <td class="px-6 py-2 text-center">
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full"
+                                          :class="stateClass"
+                                          x-html="stateIcon">
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-3 block"></i>
+                                Aucun élève dans cette classe.
+                            </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Bouton de sauvegarde collant en bas #}
+        <div class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard"></i>
+                    <span>
+                        Saisies modifiées :
+                        <span class="font-semibold text-slate-700" x-text="dirtyCount">0</span>
+                    </span>
+                    <span class="hidden sm:inline">·</span>
+                    <span class="hidden sm:inline">
+                        <span x-text="savedCount">0</span> sauvegarde(s) effectuée(s)
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="resetAll()" class="inline-flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-sm font-medium">
+                        <i class="fa-solid fa-rotate-left"></i> Réinitialiser
+                    </button>
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span x-text="savingAll ? 'Sauvegarde…' : 'Sauvegarder toutes les notes'">
+                            Sauvegarder toutes les notes
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ---------- Alpine : composant principal ---------- */
+function gradeEntry(opts) {
+    return {
+        saveUrlTemplate: opts.saveUrl,
+        bulkUrl: opts.bulkUrl,
+        csrfToken: opts.csrfToken,
+        autosave: true,
+        savingAll: false,
+        stats: {
+            average: {% if stats.average is not None %}{{ stats.average }}{% else %}null{% endif %},
+            min: {% if stats.min is not None %}{{ stats.min }}{% else %}null{% endif %},
+            max: {% if stats.max is not None %}{{ stats.max }}{% else %}null{% endif %},
+            present: {% if stats.present is not None %}{{ stats.present }}{% else %}0{% endif %},
+            total: {% if stats.total is not None %}{{ stats.total }}{% else %}0{% endif %},
+            attendance_rate: {% if stats.total %}{{ stats.attendance_rate }}{% else %}0{% endif %},
+        },
+        saveBadge: { text: '', class: 'bg-slate-100 text-slate-600' },
+        _badgeTimer: null,
+
+        get dirtyCount() {
+            let n = 0;
+            document.querySelectorAll('[x-data^="gradeRow"]').forEach(el => {
+                if (el._x_dataStack && el._x_dataStack[0] && el._x_dataStack[0].isDirty) n++;
+            });
+            return n;
+        },
+        get savedCount() {
+            let n = 0;
+            document.querySelectorAll('[x-data^="gradeRow"]').forEach(el => {
+                if (el._x_dataStack && el._x_dataStack[0] && el._x_dataStack[0].saved) n++;
+            });
+            return n;
+        },
+
+        init() {
+            window.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + S = sauvegarde rapide
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    this.saveAll();
+                }
+            });
+        },
+
+        showBadge(text, cls) {
+            const self = this;
+            if (this._badgeTimer) clearTimeout(this._badgeTimer);
+            this.saveBadge.text = text;
+            this.saveBadge.class = cls;
+            this._badgeTimer = setTimeout(() => {
+                self.saveBadge.text = '';
+            }, 2500);
+        },
+
+        formatAverage(v) {
+            if (v === null || v === undefined) return '—';
+            return Number(v).toFixed(2);
+        },
+
+        updateStats(payload) {
+            if (!payload || !payload.stats) return;
+            this.stats = Object.assign({}, this.stats, payload.stats);
+        },
+
+        async saveAll() {
+            this.savingAll = true;
+            this.showBadge('Sauvegarde globale…', 'bg-brand-100 text-brand-700');
+            try {
+                const rows = document.querySelectorAll('[x-data^="gradeRow"]');
+                const promises = [];
+                rows.forEach(el => {
+                    if (el._x_dataStack && el._x_dataStack[0] && el._x_dataStack[0].isDirty) {
+                        promises.push(el._x_dataStack[0].save(true));
+                    }
+                });
+                await Promise.all(promises);
+                this.showBadge('✓ Toutes les notes sont enregistrées', 'bg-emerald-100 text-emerald-700');
+            } catch (e) {
+                this.showBadge('⚠ Erreur de sauvegarde', 'bg-rose-100 text-rose-700');
+            } finally {
+                this.savingAll = false;
+            }
+        },
+
+        resetAll() {
+            if (!confirm('Réinitialiser toutes les modifications non sauvegardées ?')) return;
+            document.querySelectorAll('[x-data^="gradeRow"]').forEach(el => {
+                if (el._x_dataStack && el._x_dataStack[0]) {
+                    el._x_dataStack[0].reset();
+                }
+            });
+        },
+    };
+}
+
+/* ---------- Alpine : composant ligne ---------- */
+function gradeRow(opts) {
+    return {
+        id: opts.id,
+        max: parseFloat(opts.max),
+        value: opts.initialValue,
+        status: opts.initialStatus,
+        comment: opts.initialComment,
+        state: 'idle',          // idle | dirty | saving | saved | error
+        isDirty: false,
+        saved: !!opts.initialValue || opts.initialStatus !== 'PRESENT',
+        _debounce: null,
+        _saveToken: 0,
+
+        get rowClass() {
+            if (this.state === 'error') return 'bg-rose-50';
+            if (this.state === 'saving') return 'bg-amber-50';
+            if (this.state === 'saved') return 'bg-emerald-50';
+            if (this.state === 'dirty') return 'bg-amber-50/30';
+            return '';
+        },
+        get stateClass() {
+            switch (this.state) {
+                case 'dirty':   return 'bg-amber-100 text-amber-700';
+                case 'saving':  return 'bg-brand-100 text-brand-700';
+                case 'saved':   return 'bg-emerald-100 text-emerald-700';
+                case 'error':   return 'bg-rose-100 text-rose-700';
+                default:        return 'bg-slate-100 text-slate-400';
+            }
+        },
+        get stateIcon() {
+            switch (this.state) {
+                case 'dirty':  return '<i class="fa-solid fa-pen text-xs"></i>';
+                case 'saving': return '<i class="fa-solid fa-spinner fa-spin text-xs"></i>';
+                case 'saved':  return '<i class="fa-solid fa-check text-xs"></i>';
+                case 'error':  return '<i class="fa-solid fa-triangle-exclamation text-xs"></i>';
+                default:       return '<i class="fa-solid fa-minus text-[10px]"></i>';
+            }
+        },
+
+        onInput() {
+            const raw = (this.value || '').trim();
+            const upper = raw.toUpperCase();
+            if (upper === 'ABS' || upper === 'A') {
+                this.status = 'ABSENT';
+                this.value = 'ABS';
+                this._markDirty();
+                return;
+            }
+            if (upper === 'DISP' || upper === 'D') {
+                this.status = 'DISPENSED';
+                this.value = 'DISP';
+                this._markDirty();
+                return;
+            }
+            if (upper === 'NR' || upper === 'N') {
+                this.status = 'NOT_SUBMITTED';
+                this.value = 'NR';
+                this._markDirty();
+                return;
+            }
+            // Numérique
+            if (raw === '') {
+                this._markDirty();
+                return;
+            }
+            const normalized = raw.replace(',', '.');
+            const n = parseFloat(normalized);
+            if (!isNaN(n)) {
+                if (n < 0) { this.value = '0'; return; }
+                if (n > this.max) { this.value = String(this.max); }
+                this.status = 'PRESENT';
+                this._markDirty();
+            }
+        },
+
+        onStatusChange() {
+            this._markDirty();
+        },
+
+        onComment() {
+            this._markDirty();
+        },
+
+        onKey(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                this._commit().then(() => this._focusNext());
+            }
+        },
+
+        _markDirty() {
+            this.isDirty = true;
+            this.state = 'dirty';
+            if (this._debounce) clearTimeout(this._debounce);
+            // Auto-save désactivé : la sauvegarde se fait via Entrée ou bouton global.
+        },
+
+        _focusNext() {
+            const rows = Array.from(document.querySelectorAll('[x-data^="gradeRow"]'));
+            const idx = rows.findIndex(el => el._x_dataStack && el._x_dataStack[0] && el._x_dataStack[0].id === this.id);
+            if (idx === -1) return;
+            const next = rows[idx + 1];
+            if (next && next._x_dataStack && next._x_dataStack[0]) {
+                const nextEl = next._x_dataStack[0];
+                if (nextEl.$refs && nextEl.$refs.valueInput) {
+                    nextEl.$refs.valueInput.focus();
+                    nextEl.$refs.valueInput.select();
+                }
+            }
+        },
+
+        async _commit() {
+            this.state = 'saving';
+            const token = ++this._saveToken;
+            const url = this.saveUrlTemplate.replace(/0$/, this.id + '/');
+            try {
+                const fd = new FormData();
+                fd.append('value', this.value || '');
+                fd.append('status', this.status || '');
+                fd.append('comment', this.comment || '');
+                fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                const res = await fetch(url, {
+                    method: 'POST',
+                    body: fd,
+                    credentials: 'same-origin',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (token !== this._saveToken) return; // sauvegarde plus récente en cours
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || 'save_failed');
+                // Mise à jour stats live
+                const parentEl = this.$root.closest('[x-data^="gradeEntry"]');
+                if (parentEl && parentEl._x_dataStack && parentEl._x_dataStack[0]) {
+                    parentEl._x_dataStack[0].updateStats(data);
+                }
+                this.isDirty = false;
+                this.saved = true;
+                this.state = 'saved';
+                setTimeout(() => { if (this.state === 'saved') this.state = 'idle'; }, 1500);
+            } catch (err) {
+                this.state = 'error';
+            }
+        },
+
+        save(force = false) {
+            if (!force && !this.isDirty) return Promise.resolve();
+            return this._commit();
+        },
+
+        reset() {
+            this.value = opts.initialValue;
+            this.status = opts.initialStatus;
+            this.comment = opts.initialComment;
+            this.isDirty = false;
+            this.state = 'idle';
+        },
+    };
+}
+</script>
+{% endblock %}

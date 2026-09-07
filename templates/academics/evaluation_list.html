@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des évaluations{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-clipboard-check"></i></span>
+            Évaluations
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">Toutes les évaluations que vous avez créées.</p>
+    </div>
+    <a href="{% url 'academics:evaluation_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+        <i class="fa-solid fa-plus"></i> Nouvelle évaluation
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                <tr>
+                    <th class="text-left px-6 py-3">Titre</th>
+                    <th class="text-left px-6 py-3">Matière</th>
+                    <th class="text-left px-6 py-3">Classe</th>
+                    <th class="text-left px-6 py-3">Trimestre</th>
+                    <th class="text-left px-6 py-3">Date</th>
+                    <th class="text-left px-6 py-3">Coef.</th>
+                    <th class="text-right px-6 py-3">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for e in evaluations %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4 font-medium text-slate-900">{{ e.title }}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-2 px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-medium">
+                                {{ e.subject.code }} — {{ e.subject.name }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-slate-700">{{ e.class_group }}</td>
+                        <td class="px-6 py-4 text-slate-700">{{ e.term }}</td>
+                        <td class="px-6 py-4 text-slate-700">{{ e.date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4 text-slate-700 font-semibold">{{ e.coefficient }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'academics:evaluation_entry' e.id %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-brand-50 text-brand-700 rounded-md hover:bg-brand-100 font-medium">
+                                <i class="fa-solid fa-pen"></i> Saisir
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="px-6 py-16 text-center text-slate-500">
+                        <i class="fa-solid fa-inbox text-4xl text-slate-300 mb-3 block"></i>
+                        Aucune évaluation. Créez-en une pour commencer.
+                    </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

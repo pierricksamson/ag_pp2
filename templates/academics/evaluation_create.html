@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Nouvelle évaluation{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <a href="{% url 'academics:evaluation_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à la liste
+            </a>
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
+                    <i class="fa-solid fa-file-circle-plus"></i>
+                </span>
+                Nouvelle évaluation
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">Définissez les paramètres. Les élèves seront ajoutés automatiquement.</p>
+        </div>
+    </div>
+
+    <form method="post" class="bg-white rounded-2xl card-shadow p-6 sm:p-8 space-y-6">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                <i class="fa-solid fa-pen-to-square text-slate-400 mr-1"></i>Titre de l'évaluation <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" name="title" required maxlength="120"
+                   placeholder="Ex : Contrôle de maths — Chapitre 3"
+                   class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="fa-solid fa-book text-slate-400 mr-1"></i>Matière <span class="text-rose-500">*</span>
+                </label>
+                <select name="subject" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                    {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }} ({{ s.code }})</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="fa-solid fa-users-rectangle text-slate-400 mr-1"></i>Classe <span class="text-rose-500">*</span>
+                </label>
+                <select name="class_group" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                    {% for c in class_groups %}<option value="{{ c.id }}">{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="fa-solid fa-calendar-days text-slate-400 mr-1"></i>Trimestre <span class="text-rose-500">*</span>
+                </label>
+                <select name="term" required class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                    {% for t in terms %}<option value="{{ t.id }}" {% if t.is_current %}selected{% endif %}>{{ t }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="fa-solid fa-calendar-day text-slate-400 mr-1"></i>Date de l'épreuve
+                </label>
+                <input type="date" name="date" value="{{ today }}" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="fa-solid fa-sliders text-slate-400 mr-1"></i>Coefficient
+                </label>
+                <input type="number" name="coefficient" value="1" step="0.5" min="0.5" max="10" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <i class="fa-solid fa-arrow-up-wide-short text-slate-400 mr-1"></i>Note maximale
+                </label>
+                <input type="number" name="scale_max" value="20" step="0.5" min="1" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <a href="{% url 'academics:evaluation_list' %}" class="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium">Annuler</a>
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+                <i class="fa-solid fa-check"></i> Créer et saisir les notes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

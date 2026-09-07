@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - Eleve{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Bienvenue, {{ user.get_full_name }}</h2>
+    <p>Vous etes connecte en tant qu'<strong>{{ user.get_role_display }}</strong>.</p>
+</div>
+
+<div class="card">
+    <h2>Ma scolarite</h2>
+    {% if profile %}
+        <table>
+            <tr><th>Numero etudiant</th><td>{{ profile.student_number }}</td></tr>
+            <tr><th>Date de naissance</th><td>{{ profile.birth_date|default:"-" }}</td></tr>
+            <tr><th>Classe</th><td>{{ profile.class_group|default:"Non affecte" }}</td></tr>
+        </table>
+    {% else %}
+        <p>Aucun profil eleve associe a ce compte.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Mes parents</h2>
+    {% if parents %}
+        <table>
+            <thead>
+                <tr><th>Nom</th><th>Email</th><th>Lien</th></tr>
+            </thead>
+            <tbody>
+                {% for p in parents %}
+                    <tr>
+                        <td>{{ p.user.get_full_name }}</td>
+                        <td>{{ p.user.email }}</td>
+                        <td>{{ p.get_relation_display }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun parent n'est rattache a votre dossier.</p>
+    {% endif %}
+</div>
+{% endblock %}

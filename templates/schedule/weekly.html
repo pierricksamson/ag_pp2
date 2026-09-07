@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Emploi du temps — Ademi{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                <i class="fa-solid fa-calendar-week text-brand-600"></i>
+                Emploi du temps
+                {% if role == "student" %}
+                    <span class="text-xs font-semibold px-2 py-1 rounded bg-slate-100 text-slate-600">
+                        {% if user.student_profile.class_group %}{{ user.student_profile.class_group }}{% endif %}
+                    </span>
+                {% endif %}
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">
+                {% if role == "student" %}Voici le planning hebdomadaire de votre classe.
+                {% elif role == "teacher" %}Vos séances pour la semaine en cours.
+                {% else %}Vue administrateur — utilisez les filtres pour explorer les emplois du temps.{% endif %}
+            </p>
+        </div>
+        <div class="text-xs px-3 py-1.5 rounded-full bg-brand-50 text-brand-700 border border-brand-100 font-semibold uppercase tracking-wide">
+            Semaine en cours
+        </div>
+    </div>
+</div>
+
+{% if role == "admin" %}
+<form method="get" class="bg-white rounded-2xl card-shadow p-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Classe</label>
+            <select name="class" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white">
+                <option value="">— Toutes —</option>
+                {% for cg in filters.class_groups %}
+                    <option value="{{ cg.id }}" {% if filters.class_id|stringformat:"s" == cg.id|stringformat:"s" %}selected{% endif %}>{{ cg }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Professeur</label>
+            <select name="teacher" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white">
+                <option value="">— Tous —</option>
+                {% for t in filters.teachers %}
+                    <option value="{{ t.id }}" {% if filters.teacher_id|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Salle</label>
+            <select name="room" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white">
+                <option value="">— Toutes —</option>
+                {% for r in filters.rooms %}
+                    <option value="{{ r.id }}" {% if filters.room_id|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>{{ r.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex items-end gap-2">
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+                <i class="fa-solid fa-magnifying-glass"></i> Filtrer
+            </button>
+            <a href="{% url 'schedule:weekly' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-medium">
+                <i class="fa-solid fa-rotate-left"></i> Reset
+            </a>
+        </div>
+    </div>
+</form>
+{% endif %}
+
+{% if not blocks %}
+    <div class="bg-white rounded-2xl card-shadow p-12 text-center">
+        <i class="fa-solid fa-calendar-xmark text-5xl text-slate-300 mb-4 block"></i>
+        <h3 class="text-lg font-semibold text-slate-700">Aucune séance planifiée.</h3>
+        <p class="text-slate-500 text-sm mt-1">Ajoutez des séances depuis l'administration Django pour les voir apparaître ici.</p>
+    </div>
+{% else %}
+<div class="bg-white rounded-2xl card-shadow overflow-hidden">
+    <div class="overflow-x-auto">
+        <div class="min-w-[960px]">
+            {# Grille : 1 colonne horaires + 6 colonnes jours #}
+            <div class="grid border-b border-slate-200 bg-slate-50"
+                 style="grid-template-columns: 80px repeat(6, minmax(0, 1fr));">
+                <div class="px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 border-r border-slate-200"></div>
+                {% for d in days %}
+                    <div class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500 border-r border-slate-200 last:border-r-0">
+                        {{ d.label }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="relative grid"
+                 style="grid-template-columns: 80px repeat(6, minmax(0, 1fr)); grid-auto-rows: 28px; grid-template-rows: repeat({{ total_rows }}, 28px);">
+
+                {# Lignes horaires en arrière-plan #}
+                {% for mark in hour_marks %}
+                    {% with row_index=forloop.counter|add:1 %}
+                    <div class="col-start-1 border-r border-slate-100 px-2 text-[11px] text-slate-400 flex items-start justify-end pr-2 pt-0.5"
+                         style="grid-column: 1; grid-row: {{ row_index }} / span 2;">
+                        {{ mark.label }}
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+
+                {# Cellules vides par colonne de jour (fond quadrillé) #}
+                {% for d in days %}
+                    <div class="border-r border-slate-100 last:border-r-0"
+                         style="grid-column: {{ forloop.counter|add:1 }}; grid-row: 1 / span {{ total_rows }};"></div>
+                {% endfor %}
+
+                {# Cartes de séances #}
+                {% for b in blocks %}
+                    {% with day_index=0 %}
+                        {% for d in days %}
+                            {% if d.code == b.session.day %}{% with day_index=forloop.counter %}{% endwith %}{% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                {% endfor %}
+
+                {# On rend les blocs en parcourant à nouveau les jours pour calculer l'index #}
+                {% for b in blocks %}
+                    {% for d in days %}
+                        {% if d.code == b.session.day %}
+                            <div class="m-1 rounded-lg border {{ b.color }} px-2 py-1.5 overflow-hidden shadow-sm hover:shadow-md transition"
+                                 style="grid-column: {{ forloop.counter|add:1 }}; grid-row: {{ b.row_start }} / span {{ b.row_span }};">
+                                <div class="text-[11px] font-semibold uppercase tracking-wide opacity-75">
+                                    {{ b.session.start_time|time:"H:i" }}–{{ b.session.end_time|time:"H:i" }}
+                                </div>
+                                <div class="font-semibold text-sm leading-tight truncate" title="{{ b.label }}">
+                                    {{ b.label }}
+                                </div>
+                                {% if b.session.room %}
+                                    <div class="text-[11px] mt-0.5 truncate opacity-80">
+                                        <i class="fa-solid fa-location-dot"></i> {{ b.session.room.name }}
+                                    </div>
+                                {% endif %}
+                                <div class="text-[11px] mt-0.5 truncate opacity-80">
+                                    <i class="fa-solid fa-user-tie"></i> {{ b.session.teacher.user.get_full_name }}
+                                </div>
+                                {% if b.classes %}
+                                    <div class="text-[11px] mt-0.5 truncate opacity-70" title="{{ b.classes }}">
+                                        <i class="fa-solid fa-users-rectangle"></i> {{ b.classes }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+    <i class="fa-solid fa-circle-info"></i>
+    Survolez une carte pour voir le détail. Les séances colorées sont regroupées par matière.
+</div>
+{% endif %}
+{% endblock %}

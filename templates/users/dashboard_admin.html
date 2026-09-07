@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - Administrateur{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Bienvenue, {{ user.get_full_name }}</h2>
+    <p>Vous etes connecte en tant qu'<strong>{{ user.get_role_display }}</strong>.</p>
+</div>
+
+<div class="card">
+    <h2>Apercu de l'etablissement</h2>
+    <div class="stats">
+        <div class="stat">
+            <div class="value">{{ stats.eleves }}</div>
+            <div class="label">Eleves inscrits</div>
+        </div>
+        <div class="stat">
+            <div class="value">{{ stats.profs }}</div>
+            <div class="label">Professeurs</div>
+        </div>
+        <div class="stat">
+            <div class="value">{{ stats.parents }}</div>
+            <div class="label">Parents</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Administration</h2>
+    <p>Accedez a la console Django pour gerer eleves, professeurs, classes et emplois du temps.</p>
+    <a href="{{ admin_url }}" class="btn">Ouvrir la console admin</a>
+</div>
+{% endblock %}

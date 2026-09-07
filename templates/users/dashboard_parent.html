@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - Parent{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Bienvenue, {{ user.get_full_name }}</h2>
+    <p>Vous etes connecte en tant que <strong>{{ user.get_role_display }}</strong>.</p>
+</div>
+
+<div class="card">
+    <h2>Mon profil</h2>
+    {% if profile %}
+        <table>
+            <tr><th>Lien de parente</th><td>{{ profile.get_relation_display }}</td></tr>
+            <tr><th>Profession</th><td>{{ profile.occupation|default:"-" }}</td></tr>
+            <tr><th>Email</th><td>{{ user.email }}</td></tr>
+        </table>
+    {% else %}
+        <p>Aucun profil parent associe.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Mes enfants</h2>
+    {% if children %}
+        <table>
+            <thead>
+                <tr><th>Nom</th><th>Numero etudiant</th><th>Classe</th></tr>
+            </thead>
+            <tbody>
+                {% for c in children %}
+                    <tr>
+                        <td>{{ c.user.get_full_name }}</td>
+                        <td>{{ c.student_number }}</td>
+                        <td>{{ c.class_group|default:"Non affecte" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun enfant n'est actuellement rattache a votre compte.</p>
+    {% endif %}
+</div>
+{% endblock %}

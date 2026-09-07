@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - Professeur{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Bienvenue, {{ user.get_full_name }}</h2>
+    <p>Vous etes connecte en tant que <strong>{{ user.get_role_display }}</strong>.</p>
+</div>
+
+<div class="card">
+    <h2>Mon profil</h2>
+    {% if profile %}
+        <table>
+            <tr><th>Matricule</th><td>{{ profile.employee_number|default:"-" }}</td></tr>
+            <tr><th>Date d'embauche</th><td>{{ profile.hire_date|default:"-" }}</td></tr>
+            <tr>
+                <th>Matieres enseignees</th>
+                <td>
+                    {% if subjects %}
+                        {% for s in subjects %}<span class="role" style="background:#eef2ff;color:#3730a3;padding:3px 10px;border-radius:999px;margin-right:4px;">{{ s }}</span>{% endfor %}
+                    {% else %}
+                        <em>Aucune matiere assignee pour le moment.</em>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    {% else %}
+        <p>Aucun profil professeur associe a ce compte.</p>
+    {% endif %}
+</div>
+{% endblock %}
