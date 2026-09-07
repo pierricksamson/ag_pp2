@@ -149,3 +149,222 @@ Tous les comptes utilisent le mot de passe **`password123`**.
 | Parent | `parent1@test.com` | Notes de ses enfants |
 
 L'admin Django (`/admin/`) est accessible avec n'importe quel compte `is_staff=True`.
+
+```mermaid
+%% Diagramme relationnel de la base Ag PP2
+%% Source : BDD_PLAN.md et modèles Django actuels
+
+erDiagram
+    USER {
+        int id PK
+        string email UK
+        string first_name
+        string last_name
+        string role
+        string phone
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    TEACHER_PROFILE {
+        int id PK
+        int user_id FK,UK
+        string employee_number UK
+        date hire_date
+    }
+
+    STUDENT_PROFILE {
+        int id PK
+        int user_id FK,UK
+        string student_number UK
+        date birth_date
+        int class_group_id FK
+    }
+
+    PARENT_PROFILE {
+        int id PK
+        int user_id FK,UK
+        string occupation
+        string relation
+    }
+
+    ADMIN_PROFILE {
+        int id PK
+        int user_id FK,UK
+        string department
+    }
+
+    ACADEMIC_YEAR {
+        int id PK
+        string label UK
+        date start_date
+        date end_date
+        boolean is_current
+    }
+
+    LEVEL {
+        int id PK
+        string name UK
+        int order
+    }
+
+    SUBJECT {
+        int id PK
+        string code UK
+        string name
+        int level_id FK
+    }
+
+    CLASS_GROUP {
+        int id PK
+        string name
+        int level_id FK
+        int academic_year_id FK
+    }
+
+    TERM {
+        int id PK
+        string name
+        int academic_year_id FK
+        date start_date
+        date end_date
+        boolean is_current
+    }
+
+    EVALUATION {
+        int id PK
+        string title
+        int subject_id FK
+        int class_group_id FK
+        int teacher_id FK
+        int term_id FK
+        date date
+        decimal coefficient
+        decimal scale_max
+    }
+
+    GRADE {
+        int id PK
+        int evaluation_id FK
+        int student_id FK
+        decimal value
+        string status
+        string comment
+        datetime created_at
+        datetime updated_at
+    }
+
+    ROOM {
+        int id PK
+        string name UK
+        int capacity
+        string location
+    }
+
+    COURSE_SESSION {
+        int id PK
+        string title
+        int subject_id FK
+        int teacher_id FK
+        int room_id FK
+        string day
+        time start_time
+        time end_time
+        string color
+    }
+
+    ATTENDANCE_RECORD {
+        int id PK
+        int student_id FK
+        int session_id FK
+        int recorded_by_id FK
+        string status
+        int minutes_late
+        string reason
+        boolean justified
+        datetime recorded_at
+    }
+
+    ABSENCE_JUSTIFICATION {
+        int id PK
+        int attendance_id FK
+        int submitted_by_id FK
+        int reviewed_by_id FK
+        string reason
+        string status
+        datetime reviewed_at
+        datetime created_at
+    }
+
+    CONVERSATION {
+        int id PK
+        string kind
+        string subject
+        datetime created_at
+    }
+
+    MESSAGE {
+        int id PK
+        int conversation_id FK
+        int sender_id FK
+        string body
+        datetime sent_at
+        datetime read_at
+    }
+
+    RETARD {
+        int id PK
+        int student_id FK
+        int declared_by_id FK
+        int validated_by_id FK
+        date date
+        int duration_minutes
+        string motif
+        string motif_detail
+        string justification
+        string status
+        datetime validated_at
+        datetime created_at
+    }
+
+    USER ||--o| TEACHER_PROFILE : "profil professeur"
+    USER ||--o| STUDENT_PROFILE : "profil eleve"
+    USER ||--o| PARENT_PROFILE : "profil parent"
+    USER ||--o| ADMIN_PROFILE : "profil administrateur"
+
+    ACADEMIC_YEAR ||--o{ CLASS_GROUP : "organise"
+    ACADEMIC_YEAR ||--o{ TERM : "decoupe en"
+    LEVEL ||--o{ SUBJECT : "regroupe"
+    LEVEL ||--o{ CLASS_GROUP : "contient"
+    SUBJECT ||--o{ TEACHER_PROFILE : "est enseignee par"
+    CLASS_GROUP ||--o{ STUDENT_PROFILE : "regroupe"
+    PARENT_PROFILE }o--o{ STUDENT_PROFILE : "parents / enfants"
+
+    SUBJECT ||--o{ EVALUATION : "concerne"
+    CLASS_GROUP ||--o{ EVALUATION : "cible"
+    TEACHER_PROFILE o|--o{ EVALUATION : "cree"
+    TERM ||--o{ EVALUATION : "planifie"
+    EVALUATION ||--o{ GRADE : "attribue"
+    STUDENT_PROFILE ||--o{ GRADE : "obtient"
+
+    SUBJECT ||--o{ COURSE_SESSION : "enseignee dans"
+    TEACHER_PROFILE ||--o{ COURSE_SESSION : "anime"
+    CLASS_GROUP }o--o{ COURSE_SESSION : "suit"
+    ROOM o|--o{ COURSE_SESSION : "accueille"
+
+    STUDENT_PROFILE ||--o{ ATTENDANCE_RECORD : "possede"
+    COURSE_SESSION ||--o{ ATTENDANCE_RECORD : "fait objet de"
+    TEACHER_PROFILE o|--o{ ATTENDANCE_RECORD : "saisit"
+    ATTENDANCE_RECORD ||--o{ ABSENCE_JUSTIFICATION : "justifie"
+    USER o|--o{ ABSENCE_JUSTIFICATION : "soumet"
+    USER o|--o{ ABSENCE_JUSTIFICATION : "examine"
+
+    USER }o--o{ CONVERSATION : "participe"
+    CONVERSATION ||--o{ MESSAGE : "contient"
+    USER ||--o{ MESSAGE : "envoie"
+
+    STUDENT_PROFILE ||--o{ RETARD : "cumule"
+    USER o|--o{ RETARD : "declare"
+    USER o|--o{ RETARD : "valide"
+```
