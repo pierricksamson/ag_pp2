@@ -23,3 +23,6 @@ staticfiles/
 .idea/
 .DS_Store
 Thumbs.db
+
+#AI AGENT
+A*.md
