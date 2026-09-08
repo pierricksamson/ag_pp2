@@ -368,3 +368,923 @@ erDiagram
     USER o|--o{ RETARD : "declare"
     USER o|--o{ RETARD : "valide"
 ```
+Second one :
+
+```mermaid
+erDiagram
+    academics_academicyear {
+        INTEGER id PK
+        varchar(20) label
+        date start_date
+        date end_date
+        bool is_current
+    }
+    academics_classgroup {
+        INTEGER id PK
+        varchar(40) name
+        bigint academic_year_id
+        bigint level_id
+    }
+    academics_level ||--o{ academics_classgroup : "level_id"
+    academics_academicyear ||--o{ academics_classgroup : "academic_year_id"
+    academics_evaluation {
+        INTEGER id PK
+        varchar(120) title
+        date date
+        decimal coefficient
+        decimal scale_max
+        datetime created_at
+        datetime updated_at
+        bigint class_group_id
+        bigint teacher_id
+        bigint subject_id
+        bigint term_id
+    }
+    academics_term ||--o{ academics_evaluation : "term_id"
+    academics_subject ||--o{ academics_evaluation : "subject_id"
+    users_teacherprofile ||--o{ academics_evaluation : "teacher_id"
+    academics_classgroup ||--o{ academics_evaluation : "class_group_id"
+    academics_grade {
+        INTEGER id PK
+        decimal value
+        varchar(15) status
+        varchar(255) comment
+        datetime created_at
+        datetime updated_at
+        bigint evaluation_id
+        bigint student_id
+    }
+    users_studentprofile ||--o{ academics_grade : "student_id"
+    academics_evaluation ||--o{ academics_grade : "evaluation_id"
+    academics_level {
+        INTEGER id PK
+        varchar(60) name
+        smallint_unsigned order
+    }
+    academics_subject {
+        INTEGER id PK
+        varchar(10) code
+        varchar(120) name
+        bigint level_id
+    }
+    academics_level ||--o{ academics_subject : "level_id"
+    academics_term {
+        INTEGER id PK
+        varchar(60) name
+        date start_date
+        date end_date
+        bool is_current
+        bigint academic_year_id
+    }
+    academics_academicyear ||--o{ academics_term : "academic_year_id"
+    attendance_absencejustification {
+        INTEGER id PK
+        TEXT reason
+        varchar(10) status
+        datetime created_at
+        bigint attendance_id
+        bigint submitted_by_id
+        bigint reviewed_by_id
+        datetime reviewed_at
+    }
+    users_user ||--o{ attendance_absencejustification : "reviewed_by_id"
+    users_user ||--o{ attendance_absencejustification : "submitted_by_id"
+    attendance_attendancerecord ||--o{ attendance_absencejustification : "attendance_id"
+    attendance_attendancerecord {
+        INTEGER id PK
+        varchar(10) status
+        smallint_unsigned minutes_late
+        varchar(255) reason
+        datetime recorded_at
+        bigint recorded_by_id
+        bigint session_id
+        bigint student_id
+        bool justified
+        TEXT justification_reason
+    }
+    users_studentprofile ||--o{ attendance_attendancerecord : "student_id"
+    schedule_coursesession ||--o{ attendance_attendancerecord : "session_id"
+    users_teacherprofile ||--o{ attendance_attendancerecord : "recorded_by_id"
+    auth_group {
+        INTEGER id PK
+        varchar(150) name
+    }
+    auth_group_permissions {
+        INTEGER id PK
+        INTEGER group_id
+        INTEGER permission_id
+    }
+    auth_permission ||--o{ auth_group_permissions : "permission_id"
+    auth_group ||--o{ auth_group_permissions : "group_id"
+    auth_permission {
+        INTEGER id PK
+        INTEGER content_type_id
+        varchar(100) codename
+        varchar(255) name
+    }
+    django_content_type ||--o{ auth_permission : "content_type_id"
+    django_admin_log {
+        INTEGER id PK
+        TEXT object_id
+        varchar(200) object_repr
+        smallint_unsigned action_flag
+        TEXT change_message
+        INTEGER content_type_id
+        bigint user_id
+        datetime action_time
+    }
+    users_user ||--o{ django_admin_log : "user_id"
+    django_content_type ||--o{ django_admin_log : "content_type_id"
+    django_content_type {
+        INTEGER id PK
+        varchar(100) app_label
+        varchar(100) model
+    }
+    django_migrations {
+        INTEGER id PK
+        varchar(255) app
+        varchar(255) name
+        datetime applied
+    }
+    django_session {
+        varchar(40) session_key PK
+        TEXT session_data
+        datetime expire_date
+    }
+    messaging_conversation {
+        INTEGER id PK
+        varchar(120) subject
+        datetime created_at
+        varchar(4) kind
+    }
+    messaging_conversation_participants {
+        INTEGER id PK
+        bigint conversation_id
+        bigint user_id
+    }
+    users_user ||--o{ messaging_conversation_participants : "user_id"
+    messaging_conversation ||--o{ messaging_conversation_participants : "conversation_id"
+    messaging_message {
+        INTEGER id PK
+        TEXT body
+        datetime sent_at
+        datetime read_at
+        bigint conversation_id
+        bigint sender_id
+    }
+    users_user ||--o{ messaging_message : "sender_id"
+    messaging_conversation ||--o{ messaging_message : "conversation_id"
+    schedule_coursesession {
+        INTEGER id PK
+        varchar(120) title
+        varchar(3) day
+        time start_time
+        time end_time
+        varchar(20) color
+        bigint room_id
+        bigint subject_id
+        bigint teacher_id
+    }
+    users_teacherprofile ||--o{ schedule_coursesession : "teacher_id"
+    academics_subject ||--o{ schedule_coursesession : "subject_id"
+    schedule_room ||--o{ schedule_coursesession : "room_id"
+    schedule_coursesession_class_groups {
+        INTEGER id PK
+        bigint coursesession_id
+        bigint classgroup_id
+    }
+    academics_classgroup ||--o{ schedule_coursesession_class_groups : "classgroup_id"
+    schedule_coursesession ||--o{ schedule_coursesession_class_groups : "coursesession_id"
+    schedule_room {
+        INTEGER id PK
+        varchar(60) name
+        smallint_unsigned capacity
+        varchar(120) location
+    }
+    users_adminprofile {
+        INTEGER id PK
+        varchar(120) department
+        bigint user_id
+    }
+    users_user ||--o{ users_adminprofile : "user_id"
+    users_parentprofile {
+        INTEGER id PK
+        varchar(120) occupation
+        varchar(20) relation
+        bigint user_id
+    }
+    users_user ||--o{ users_parentprofile : "user_id"
+    users_studentprofile {
+        INTEGER id PK
+        varchar(20) student_number
+        date birth_date
+        bigint class_group_id
+        bigint user_id
+    }
+    users_user ||--o{ users_studentprofile : "user_id"
+    academics_classgroup ||--o{ users_studentprofile : "class_group_id"
+    users_studentprofile_parents {
+        INTEGER id PK
+        bigint studentprofile_id
+        bigint parentprofile_id
+    }
+    users_parentprofile ||--o{ users_studentprofile_parents : "parentprofile_id"
+    users_studentprofile ||--o{ users_studentprofile_parents : "studentprofile_id"
+    users_teacherprofile {
+        INTEGER id PK
+        varchar(20) employee_number
+        date hire_date
+        bigint user_id
+    }
+    users_user ||--o{ users_teacherprofile : "user_id"
+    users_teacherprofile_subjects {
+        INTEGER id PK
+        bigint teacherprofile_id
+        bigint subject_id
+    }
+    academics_subject ||--o{ users_teacherprofile_subjects : "subject_id"
+    users_teacherprofile ||--o{ users_teacherprofile_subjects : "teacherprofile_id"
+    users_user {
+        INTEGER id PK
+        varchar(128) password
+        datetime last_login
+        bool is_superuser
+        bool is_staff
+        datetime date_joined
+        varchar(254) email
+        varchar(80) first_name
+        varchar(80) last_name
+        varchar(10) role
+        varchar(20) phone
+        bool is_active
+        datetime created_at
+        datetime updated_at
+    }
+    users_user_groups {
+        INTEGER id PK
+        bigint user_id
+        INTEGER group_id
+    }
+    auth_group ||--o{ users_user_groups : "group_id"
+    users_user ||--o{ users_user_groups : "user_id"
+    users_user_user_permissions {
+        INTEGER id PK
+        bigint user_id
+        INTEGER permission_id
+    }
+    auth_permission ||--o{ users_user_user_permissions : "permission_id"
+    users_user ||--o{ users_user_user_permissions : "user_id"
+    vie_scolaire_retard {
+        INTEGER id PK
+        date date
+        smallint_unsigned duration_minutes
+        varchar(20) motif
+        varchar(255) motif_detail
+        TEXT justification
+        datetime justification_submitted_at
+        varchar(15) status
+        datetime validated_at
+        datetime created_at
+        bigint declared_by_id
+        bigint student_id
+        bigint validated_by_id
+    }
+    users_user ||--o{ vie_scolaire_retard : "validated_by_id"
+    users_studentprofile ||--o{ vie_scolaire_retard : "student_id"
+    users_user ||--o{ vie_scolaire_retard : "declared_by_id"
+
+```
+
+Modèle cible complet de gestion scolaire
+```mermaid
+erDiagram
+
+    SCHOOL {
+        string id PK
+        string name
+        string code
+        string email
+        string phone
+    }
+
+    CAMPUS {
+        string id PK
+        string school_id FK
+        string name
+        string code
+    }
+
+    ACADEMIC_YEAR {
+        string id PK
+        string school_id FK
+        string name
+        date start_date
+        date end_date
+    }
+
+    TERM {
+        string id PK
+        string academic_year_id FK
+        string name
+        date start_date
+        date end_date
+    }
+
+    APP_USER["USER"] {
+        string id PK
+        string email
+        string password_hash
+        string first_name
+        string last_name
+        string phone
+        boolean is_active
+    }
+
+    ROLE {
+        string id PK
+        string name
+        string description
+    }
+
+    USER_ROLE {
+        string user_id FK
+        string role_id FK
+    }
+
+    PERMISSION {
+        string id PK
+        string name
+        string resource
+        string action
+    }
+
+    ROLE_PERMISSION {
+        string role_id FK
+        string permission_id FK
+    }
+
+    STUDENT {
+        string id PK
+        string user_id FK
+        string school_id FK
+        string admission_number
+        string first_name
+        string last_name
+        date date_of_birth
+        string gender
+        string status
+    }
+
+    GUARDIAN {
+        string id PK
+        string user_id FK
+        string first_name
+        string last_name
+        string relationship
+        string phone
+        string email
+    }
+
+    STUDENT_GUARDIAN {
+        string student_id FK
+        string guardian_id FK
+        boolean is_primary
+    }
+
+    STAFF {
+        string id PK
+        string user_id FK
+        string school_id FK
+        string employee_number
+        string first_name
+        string last_name
+        string job_title
+        string department
+        date hire_date
+        string status
+    }
+
+    GRADE_LEVEL {
+        string id PK
+        string school_id FK
+        string name
+        string code
+        int sequence
+    }
+
+    CLASSROOM {
+        string id PK
+        string campus_id FK
+        string name
+        string code
+        int capacity
+    }
+
+    SCHOOL_CLASS["CLASS"] {
+        string id PK
+        string academic_year_id FK
+        string grade_level_id FK
+        string classroom_id FK
+        string class_teacher_id FK
+        string name
+        string code
+    }
+
+    CLASS_ENROLLMENT {
+        string id PK
+        string class_id FK
+        string student_id FK
+        date enrollment_date
+        date withdrawal_date
+        string status
+    }
+
+    SUBJECT {
+        string id PK
+        string school_id FK
+        string name
+        string code
+        boolean is_core
+        boolean is_active
+    }
+
+    CLASS_SUBJECT {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        string teacher_id FK
+    }
+
+    TEACHER_SUBJECT {
+        string teacher_id FK
+        string subject_id FK
+    }
+
+    TIMETABLE {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        string teacher_id FK
+        string classroom_id FK
+        string day_of_week
+        string start_time
+        string end_time
+    }
+
+    ATTENDANCE_SESSION {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        date attendance_date
+        string recorded_by FK
+    }
+
+    ATTENDANCE {
+        string id PK
+        string attendance_session_id FK
+        string student_id FK
+        string status
+        string reason
+    }
+
+    ASSESSMENT_TYPE {
+        string id PK
+        string school_id FK
+        string name
+        float weight
+    }
+
+    ASSESSMENT {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        string term_id FK
+        string assessment_type_id FK
+        string title
+        date assessment_date
+        float max_score
+        float weight
+    }
+
+    ASSESSMENT_RESULT {
+        string id PK
+        string assessment_id FK
+        string student_id FK
+        float score
+        string grade
+        string remarks
+    }
+
+    GRADE_SCALE {
+        string id PK
+        string school_id FK
+        string name
+        float min_percentage
+        float max_percentage
+        string grade
+        float grade_point
+    }
+
+    REPORT_CARD {
+        string id PK
+        string student_id FK
+        string class_id FK
+        string term_id FK
+        float average_percentage
+        float gpa
+        string overall_grade
+        int class_rank
+        string remarks
+    }
+
+    REPORT_CARD_SUBJECT {
+        string id PK
+        string report_card_id FK
+        string subject_id FK
+        float score
+        float percentage
+        string grade
+        float grade_point
+    }
+
+    ASSIGNMENT {
+        string id PK
+        string class_subject_id FK
+        string teacher_id FK
+        string title
+        string description
+        date due_date
+        float max_score
+    }
+
+    ASSIGNMENT_SUBMISSION {
+        string id PK
+        string assignment_id FK
+        string student_id FK
+        date submitted_at
+        float score
+        string feedback
+    }
+
+    FEE_CATEGORY {
+        string id PK
+        string school_id FK
+        string name
+        string description
+    }
+
+    FEE_STRUCTURE {
+        string id PK
+        string academic_year_id FK
+        string grade_level_id FK
+        string fee_category_id FK
+        float amount
+        boolean mandatory
+    }
+
+    STUDENT_INVOICE {
+        string id PK
+        string student_id FK
+        string academic_year_id FK
+        string invoice_number
+        date issue_date
+        date due_date
+        float total
+        float amount_paid
+        float balance
+        string status
+    }
+
+    INVOICE_ITEM {
+        string id PK
+        string invoice_id FK
+        string fee_category_id FK
+        string description
+        float quantity
+        float unit_price
+        float amount
+    }
+
+    PAYMENT {
+        string id PK
+        string student_id FK
+        string invoice_id FK
+        string receipt_number
+        float amount
+        string payment_method
+        string transaction_reference
+        date payment_date
+        string status
+    }
+
+    SCHOLARSHIP {
+        string id PK
+        string school_id FK
+        string name
+        float percentage
+        float fixed_amount
+    }
+
+    STUDENT_SCHOLARSHIP {
+        string student_id FK
+        string scholarship_id FK
+        date awarded_date
+        string status
+    }
+
+    LEAVE_TYPE {
+        string id PK
+        string school_id FK
+        string name
+        int default_days
+    }
+
+    STAFF_LEAVE {
+        string id PK
+        string staff_id FK
+        string leave_type_id FK
+        date start_date
+        date end_date
+        string status
+    }
+
+    STUDENT_LEAVE {
+        string id PK
+        string student_id FK
+        date start_date
+        date end_date
+        string status
+    }
+
+    VEHICLE {
+        string id PK
+        string school_id FK
+        string registration_number
+        string vehicle_number
+        int capacity
+        string status
+    }
+
+    TRANSPORT_ROUTE {
+        string id PK
+        string school_id FK
+        string name
+        string code
+        float fee
+    }
+
+    ROUTE_STOP {
+        string id PK
+        string route_id FK
+        string name
+        string address
+        string pickup_time
+        string dropoff_time
+    }
+
+    STUDENT_TRANSPORT {
+        string student_id FK
+        string route_id FK
+        string stop_id FK
+        date start_date
+        date end_date
+        string status
+    }
+
+    LIBRARY {
+        string id PK
+        string school_id FK
+        string name
+        string location
+    }
+
+    BOOK {
+        string id PK
+        string library_id FK
+        string isbn
+        string title
+        string author
+        string publisher
+    }
+
+    BOOK_COPY {
+        string id PK
+        string book_id FK
+        string barcode
+        string shelf_location
+        string status
+    }
+
+    LIBRARY_LOAN {
+        string id PK
+        string book_copy_id FK
+        string student_id FK
+        string staff_id FK
+        date checkout_date
+        date due_date
+        date returned_date
+        float fine_amount
+        string status
+    }
+
+    ANNOUNCEMENT {
+        string id PK
+        string school_id FK
+        string created_by FK
+        string title
+        string content
+        string audience
+        date publish_date
+    }
+
+    MESSAGE {
+        string id PK
+        string sender_id FK
+        string recipient_id FK
+        string subject
+        string content
+        date sent_at
+        date read_at
+    }
+
+    NOTIFICATION {
+        string id PK
+        string user_id FK
+        string type
+        string title
+        string message
+        date read_at
+    }
+
+    SCHOOL_EVENT {
+        string id PK
+        string school_id FK
+        string created_by FK
+        string title
+        string description
+        date start_date
+        date end_date
+        string location
+    }
+
+    EVENT_PARTICIPANT {
+        string event_id FK
+        string user_id FK
+        string status
+    }
+
+    MEDICAL_RECORD {
+        string id PK
+        string student_id FK
+        string blood_group
+        string allergies
+        string conditions
+        string medications
+        string notes
+    }
+
+    EMERGENCY_CONTACT {
+        string id PK
+        string student_id FK
+        string name
+        string relationship
+        string phone
+        boolean is_primary
+    }
+
+    AUDIT_LOG {
+        string id PK
+        string user_id FK
+        string school_id FK
+        string action
+        string entity_type
+        string entity_id
+        string created_at
+    }
+
+
+    SCHOOL ||--o{ CAMPUS : has
+    SCHOOL ||--o{ ACADEMIC_YEAR : has
+    ACADEMIC_YEAR ||--o{ TERM : contains
+
+    SCHOOL ||--o{ STUDENT : enrolls
+    SCHOOL ||--o{ STAFF : employs
+    SCHOOL ||--o{ GRADE_LEVEL : defines
+    SCHOOL ||--o{ SUBJECT : offers
+
+    CAMPUS ||--o{ CLASSROOM : contains
+    CLASSROOM ||--o{ SCHOOL_CLASS : hosts
+
+    GRADE_LEVEL ||--o{ SCHOOL_CLASS : contains
+    ACADEMIC_YEAR ||--o{ SCHOOL_CLASS : contains
+    STAFF ||--o{ SCHOOL_CLASS : teaches
+
+    SCHOOL_CLASS ||--o{ CLASS_ENROLLMENT : has
+    STUDENT ||--o{ CLASS_ENROLLMENT : joins
+
+    APP_USER ||--o| STUDENT : account
+    APP_USER ||--o| GUARDIAN : account
+    APP_USER ||--o| STAFF : account
+
+    APP_USER ||--o{ USER_ROLE : has
+    ROLE ||--o{ USER_ROLE : assigned
+
+    ROLE ||--o{ ROLE_PERMISSION : grants
+    PERMISSION ||--o{ ROLE_PERMISSION : contains
+
+    STUDENT ||--o{ STUDENT_GUARDIAN : has
+    GUARDIAN ||--o{ STUDENT_GUARDIAN : represents
+
+    SCHOOL_CLASS ||--o{ CLASS_SUBJECT : offers
+    SUBJECT ||--o{ CLASS_SUBJECT : included
+    STAFF ||--o{ CLASS_SUBJECT : teaches
+
+    STAFF ||--o{ TEACHER_SUBJECT : qualified
+    SUBJECT ||--o{ TEACHER_SUBJECT : taught
+
+    SCHOOL_CLASS ||--o{ TIMETABLE : has
+    SUBJECT ||--o{ TIMETABLE : scheduled
+    STAFF ||--o{ TIMETABLE : teaches
+    CLASSROOM ||--o{ TIMETABLE : hosts
+
+    SCHOOL_CLASS ||--o{ ATTENDANCE_SESSION : has
+    SUBJECT ||--o{ ATTENDANCE_SESSION : for
+    ATTENDANCE_SESSION ||--o{ ATTENDANCE : contains
+    STUDENT ||--o{ ATTENDANCE : receives
+    STAFF ||--o{ ATTENDANCE_SESSION : records
+
+    SCHOOL ||--o{ ASSESSMENT_TYPE : defines
+    SCHOOL_CLASS ||--o{ ASSESSMENT : has
+    SUBJECT ||--o{ ASSESSMENT : covers
+    TERM ||--o{ ASSESSMENT : contains
+    ASSESSMENT_TYPE ||--o{ ASSESSMENT : categorizes
+
+    ASSESSMENT ||--o{ ASSESSMENT_RESULT : produces
+    STUDENT ||--o{ ASSESSMENT_RESULT : receives
+
+    SCHOOL ||--o{ GRADE_SCALE : defines
+
+    STUDENT ||--o{ REPORT_CARD : receives
+    SCHOOL_CLASS ||--o{ REPORT_CARD : generates
+    TERM ||--o{ REPORT_CARD : belongs
+
+    REPORT_CARD ||--o{ REPORT_CARD_SUBJECT : contains
+    SUBJECT ||--o{ REPORT_CARD_SUBJECT : represents
+
+    CLASS_SUBJECT ||--o{ ASSIGNMENT : has
+    STAFF ||--o{ ASSIGNMENT : creates
+    ASSIGNMENT ||--o{ ASSIGNMENT_SUBMISSION : receives
+    STUDENT ||--o{ ASSIGNMENT_SUBMISSION : submits
+
+    SCHOOL ||--o{ FEE_CATEGORY : defines
+    ACADEMIC_YEAR ||--o{ FEE_STRUCTURE : has
+    GRADE_LEVEL ||--o{ FEE_STRUCTURE : applies
+    FEE_CATEGORY ||--o{ FEE_STRUCTURE : uses
+
+    STUDENT ||--o{ STUDENT_INVOICE : billed
+    STUDENT_INVOICE ||--o{ INVOICE_ITEM : contains
+    FEE_CATEGORY ||--o{ INVOICE_ITEM : represents
+    STUDENT_INVOICE ||--o{ PAYMENT : receives
+    STUDENT ||--o{ PAYMENT : pays
+
+    SCHOOL ||--o{ SCHOLARSHIP : offers
+    STUDENT ||--o{ STUDENT_SCHOLARSHIP : receives
+    SCHOLARSHIP ||--o{ STUDENT_SCHOLARSHIP : awards
+
+    SCHOOL ||--o{ LEAVE_TYPE : defines
+    STAFF ||--o{ STAFF_LEAVE : requests
+    LEAVE_TYPE ||--o{ STAFF_LEAVE : categorizes
+    STUDENT ||--o{ STUDENT_LEAVE : requests
+
+    SCHOOL ||--o{ VEHICLE : owns
+    SCHOOL ||--o{ TRANSPORT_ROUTE : operates
+    TRANSPORT_ROUTE ||--o{ ROUTE_STOP : contains
+    STUDENT ||--o{ STUDENT_TRANSPORT : uses
+    TRANSPORT_ROUTE ||--o{ STUDENT_TRANSPORT : assigns
+    ROUTE_STOP ||--o{ STUDENT_TRANSPORT : uses
+
+    SCHOOL ||--o{ LIBRARY : has
+    LIBRARY ||--o{ BOOK : contains
+    BOOK ||--o{ BOOK_COPY : has
+    BOOK_COPY ||--o{ LIBRARY_LOAN : loaned
+    STUDENT ||--o{ LIBRARY_LOAN : borrows
+    STAFF ||--o{ LIBRARY_LOAN : borrows
+
+    SCHOOL ||--o{ ANNOUNCEMENT : publishes
+    APP_USER ||--o{ ANNOUNCEMENT : creates
+
+    APP_USER ||--o{ MESSAGE : sends
+    APP_USER ||--o{ MESSAGE : receives
+    APP_USER ||--o{ NOTIFICATION : receives
+
+    SCHOOL ||--o{ SCHOOL_EVENT : hosts
+    APP_USER ||--o{ SCHOOL_EVENT : creates
+    SCHOOL_EVENT ||--o{ EVENT_PARTICIPANT : has
+    APP_USER ||--o{ EVENT_PARTICIPANT : attends
+
+    STUDENT ||--o{ MEDICAL_RECORD : has
+    STUDENT ||--o{ EMERGENCY_CONTACT : has
+
+    SCHOOL ||--o{ AUDIT_LOG : records
+    APP_USER ||--o{ AUDIT_LOG : performs
+```
