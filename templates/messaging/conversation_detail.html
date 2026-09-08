@@ -3,11 +3,7 @@
 {% block title %}Conversation{% endblock %}
 
 {% block content %}
-<div x-data="conversationThread({
-    sendUrl: '{% url 'messaging:send_message_ajax' conversation.id %}',
-    userId: {{ request.user.id }}
-})" class="max-w-3xl mx-auto">
-
+<div class="max-w-4xl mx-auto py-6">
     <div class="mb-4">
         {% if conversation.kind == "CHAT" %}
             <a href="{% url 'messaging:chat_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
@@ -18,96 +14,103 @@
                 <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à la messagerie
             </a>
         {% endif %}
-        <h1 class="text-xl font-bold text-slate-900">
-            {% if conversation.is_group and conversation.subject %}
-                {{ conversation.subject }}
-                <span class="text-sm font-normal text-slate-400">({% for u in others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %})</span>
-            {% else %}
-                {% for u in others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-            {% endif %}
-        </h1>
-        {% if conversation.subject and not conversation.is_group %}<p class="text-slate-500 text-sm">{{ conversation.subject }}</p>{% endif %}
     </div>
 
-    <div class="bg-white rounded-2xl card-shadow p-6 space-y-4 mb-4 max-h-[60vh] overflow-y-auto" x-ref="thread">
-        <template x-for="m in messages" :key="m.id">
-            <div class="flex" :class="m.sender_id === userId ? 'justify-end' : 'justify-start'">
-                <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm"
-                     :class="m.sender_id === userId ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'">
-                    <div class="font-semibold text-xs mb-0.5" x-show="m.sender_id !== userId" x-text="m.sender"></div>
-                    <div x-text="m.body" class="whitespace-pre-wrap"></div>
-                    <div class="text-[10px] opacity-70 mt-1 text-right" x-text="m.sent_at"></div>
+    {% if conversation.kind == "MAIL" %}
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-4">
+            <div class="border-b border-slate-100 px-6 py-4 space-y-3">
+                <h1 class="text-xl font-bold text-slate-900">
+                    {% if conversation.subject %}{{ conversation.subject }}{% else %}Sans objet{% endif %}
+                </h1>
+                <div class="flex items-center gap-4 text-sm text-slate-600">
+                    <div>
+                        <span class="font-semibold text-slate-900">De :</span>
+                        {% for u in conversation.participants.all %}
+                            {% if u != request.user %}{{ u.get_full_name }}{% endif %}
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <span class="font-semibold text-slate-900">À :</span>
+                        {% for m in conversation.messages.all %}
+                            {% for u in m.to_recipients.all %}
+                                {{ u.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    <div class="text-xs text-slate-400">
+                        {{ conversation.messages.first.sent_at|date:"d/m/Y H:i" }}
+                    </div>
                 </div>
+                {% if conversation.messages.first.cc_recipients.all %}
+                <div class="text-sm text-slate-600">
+                    <span class="font-semibold text-slate-900">CC :</span>
+                    {% for m in conversation.messages.all %}
+                        {% for u in m.cc_recipients.all %}
+                            {{ u.get_full_name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
-        </template>
+        </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-4">
+        {% if conversation.kind == "CHAT" %}
+        <div class="max-h-[60vh] overflow-y-auto p-6 space-y-4" x-data="conversationThread({
+            sendUrl: '{% url 'messaging:send_message_ajax' conversation.id %}',
+            userId: {{ request.user.id }},
+            conversationKind: '{{ conversation.kind }}'
+        })">
+            <template x-for="m in messages" :key="m.id">
+                <div class="flex" :class="m.sender_id === userId ? 'justify-end' : 'justify-start'">
+                    <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm"
+                         :class="m.sender_id === userId ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'">
+                        <div class="font-semibold text-xs mb-0.5" x-show="m.sender_id !== userId" x-text="m.sender"></div>
+                        <div x-text="m.body" class="whitespace-pre-wrap"></div>
+                        <div class="text-[10px] opacity-70 mt-1 text-right" x-text="m.sent_at"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+        {% else %}
+        <div class="max-h-[50vh] overflow-y-auto p-6 space-y-4">
+            {% for m in conversation.messages.all %}
+                <div class="flex items-start gap-3 {{ m.sender_id == request.user.id ? 'justify-end' : '' }}">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-semibold text-sm text-slate-900">{{ m.sender.get_full_name }}</span>
+                            <span class="text-xs text-slate-400">{{ m.sent_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="text-sm text-slate-700 whitespace-pre-wrap">
+                            {{ m.body|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 
-    <form @submit.prevent="send()" class="bg-white rounded-2xl card-shadow p-3 flex items-end gap-2">
-        <textarea x-model="draft" @keydown.enter.exact.prevent="send()" rows="2" placeholder="Votre message…"
-                  class="flex-1 px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 text-sm resize-none"></textarea>
-        <button type="submit" :disabled="sending || !draft.trim()"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm disabled:opacity-50">
-            <i class="fa-solid fa-paper-plane"></i>
-        </button>
-    </form>
+    {% if conversation.kind == "MAIL" %}
+    <div class="bg-white rounded-2xl card-shadow p-4">
+        <div class="flex items-center gap-2 mb-3">
+            <a href="{% url 'messaging:reply' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium">
+                <i class="fa-solid fa-reply"></i> Répondre
+            </a>
+            <a href="{% url 'messaging:forward' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-3 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 text-sm font-medium">
+                <i class="fa-solid fa-forward"></i> Transférer
+            </a>
+        </div>
+        <form method="post" class="flex items-end gap-2">
+            {% csrf_token %}
+            <textarea name="body" rows="2" placeholder="Votre message…"
+                      class="flex-1 px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 text-sm resize-none"></textarea>
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+                <i class="fa-solid fa-paper-plane"></i> Envoyer
+            </button>
+        </form>
+    </div>
+    {% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function conversationThread(opts) {
-    return {
-        sendUrl: opts.sendUrl,
-        userId: opts.userId,
-        draft: '',
-        sending: false,
-        messages: [
-            {% for m in message_list %}
-            {
-                id: {{ m.id }},
-                sender: "{{ m.sender.get_full_name|default:m.sender.email|escapejs }}",
-                sender_id: {{ m.sender_id }},
-                body: "{{ m.body|escapejs }}",
-                sent_at: "{{ m.sent_at|date:'d/m/Y H:i' }}",
-            }{% if not forloop.last %},{% endif %}
-            {% endfor %}
-        ],
-
-        init() {
-            this.scrollToBottom();
-        },
-
-        scrollToBottom() {
-            this.$nextTick(() => {
-                if (this.$refs.thread) this.$refs.thread.scrollTop = this.$refs.thread.scrollHeight;
-            });
-        },
-
-        async send() {
-            const body = this.draft.trim();
-            if (!body || this.sending) return;
-            this.sending = true;
-            try {
-                const fd = new FormData();
-                fd.append('body', body);
-                fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}');
-                const res = await fetch(this.sendUrl, {
-                    method: 'POST',
-                    body: fd,
-                    credentials: 'same-origin',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    this.messages.push(data.message);
-                    this.draft = '';
-                    this.scrollToBottom();
-                }
-            } finally {
-                this.sending = false;
-            }
-        },
-    };
-}
-</script>
 {% endblock %}

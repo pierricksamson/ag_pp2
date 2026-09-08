@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Corbeille{% endblock %}
+
+{% block content %}
+<div class="flex h-[calc(100vh-140px)] bg-white rounded-2xl card-shadow overflow-hidden">
+    <!-- Sidebar -->
+    <div class="w-64 border-r border-slate-200 bg-slate-50 flex flex-col">
+        <div class="p-4 border-b border-slate-200">
+            <a href="{% url 'messaging:new_conversation' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm w-full justify-center">
+                <i class="fa-solid fa-pen"></i> Nouveau message
+            </a>
+        </div>
+        <nav class="flex-1 p-2 space-y-1">
+            <a href="{% url 'messaging:inbox' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-inbox w-5 text-center"></i>
+                Boîte de réception
+            </a>
+            <a href="{% url 'messaging:sent' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-paper-plane w-5 text-center"></i>
+                Envoyés
+            </a>
+            <a href="{% url 'messaging:drafts' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-drafts w-5 text-center"></i>
+                Brouillons
+                {% if draft_count %}<span class="ml-auto bg-slate-400 text-white text-xs px-2 py-0.5 rounded-full">{{ draft_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'messaging:trash' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition bg-brand-100 text-brand-700">
+                <i class="fa-solid fa-recycle w-5 text-center"></i>
+                Corbeille
+            </a>
+        </nav>
+        <div class="p-3 border-t border-slate-200">
+            {% if user.is_staff_member %}
+            <a href="{% url 'messaging:chat_list' %}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <i class="fa-solid fa-comments w-5 text-center"></i>
+                Chat
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex-1 overflow-y-auto">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                <i class="fa-solid fa-recycle text-brand-600"></i>
+                Corbeille
+            </h1>
+
+            <div class="bg-white rounded-2xl card-shadow overflow-hidden divide-y divide-slate-100">
+                {% for message in trash %}
+                    <div class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition">
+                        <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold shrink-0">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-sm truncate">
+                                    {% for u in message.to_recipients.all %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </span>
+                                {% if message.subject %}
+                                    <span class="text-xs text-slate-400 truncate">— {{ message.subject }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-sm text-slate-500 truncate">
+                                {{ message.body|truncatechars:200 }}
+                            </p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="text-xs text-slate-400">{{ message.sent_at|date:"d/m H:i" }}</div>
+                            <div class="flex gap-2 mt-1">
+                                <a href="{% url 'messaging:restore_message' message.id %}" class="text-xs text-brand-600 hover:underline">Restaurer</a>
+                                <a href="{% url 'messaging:conversation_detail' message.conversation.id %}" class="text-xs text-slate-500 hover:underline">Voir</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="px-6 py-12 text-center text-slate-500">
+                        <i class="fa-solid fa-trash-can text-3xl text-slate-300 mb-3 block"></i>
+                        La corbeille est vide.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
