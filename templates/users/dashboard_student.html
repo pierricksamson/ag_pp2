@@ -20,7 +20,31 @@
         <p>Aucun profil eleve associe a ce compte.</p>
     {% endif %}
 </div>
-
+<div class="card">
+    <h2>Vie scolaire</h2>
+    {% if vie_scolaire_stats %}
+        <div class="stats">
+            <div class="stat">
+                <div class="value">{{ vie_scolaire_stats.absences }}</div>
+                <div class="label">Absences</div>
+            </div>
+            <div class="stat">
+                <div class="value">{{ vie_scolaire_stats.absences_non_justifiees }}</div>
+                <div class="label">Non justifiées</div>
+            </div>
+            <div class="stat">
+                <div class="value">{{ vie_scolaire_stats.retards }}</div>
+                <div class="label">Retards</div>
+            </div>
+            <div class="stat">
+                <div class="value">{{ vie_scolaire_stats.retards_en_attente }}</div>
+                <div class="label">En attente</div>
+            </div>
+        </div>
+    {% else %}
+        <p>Aucune donnée disponible.</p>
+    {% endif %}
+</div>
 <div class="card">
     <h2>Mes parents</h2>
     {% if parents %}

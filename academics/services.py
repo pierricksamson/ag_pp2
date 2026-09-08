@@ -131,3 +131,43 @@ from django.db.models.functions import Coalesce
 
 def models_sum_coefficients():
     return Coalesce(Sum("coefficient"), 0, output_field=DecimalField())
+
+
+# =========================
+#  Classement (rang dans la classe) — façon Pronote
+# =========================
+
+
+def class_ranking(class_group, term: Term) -> list[tuple]:
+    """Classement des élèves d'une classe par moyenne générale décroissante.
+
+    Renvoie une liste de tuples ``(student, average)`` triée par moyenne
+    décroissante. Les élèves sans moyenne exploitable sont exclus.
+    """
+    if class_group is None:
+        return []
+    from users.models import StudentProfile
+
+    students = StudentProfile.objects.filter(class_group=class_group).select_related("user")
+    ranking = []
+    for student in students:
+        avg = weighted_average(student, term)
+        if avg is not None:
+            ranking.append((student, avg))
+    ranking.sort(key=lambda x: x[1], reverse=True)
+    return ranking
+
+
+def student_rank(student, term: Term):
+    """Renvoie ``(rang, effectif)`` de l'élève dans sa classe pour ce trimestre.
+
+    Renvoie ``None`` si l'élève n'a pas de classe ou pas de moyenne exploitable.
+    """
+    if student.class_group is None:
+        return None
+    ranking = class_ranking(student.class_group, term)
+    total = len(ranking)
+    for index, (s, _avg) in enumerate(ranking, start=1):
+        if s.id == student.id:
+            return index, total
+    return None

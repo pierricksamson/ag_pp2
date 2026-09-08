@@ -1,3 +1,5 @@
+"""Vues de l'app academics — création/saisie d'évaluations, relevé de notes."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -24,6 +26,7 @@ from .models import (
 )
 from .services import (
     class_subject_average,
+    student_rank,
     subject_average,
     weighted_average,
 )
@@ -38,7 +41,6 @@ def evaluation_create(request: HttpRequest) -> HttpResponse:
         raise PermissionDenied
 
     teacher = request.user.teacher_profile
-    # matières enseignées ; si aucune, on montre toutes
     subjects = teacher.subjects.all() if teacher else Subject.objects.none()
     if not subjects.exists():
         subjects = Subject.objects.all()
@@ -83,7 +85,6 @@ def evaluation_create(request: HttpRequest) -> HttpResponse:
                 coefficient=coefficient_v,
                 scale_max=scale_max_v,
             )
-            # Pré-créer une ligne Grade par élève de la classe (statut PRESENT, valeur nulle).
             students = StudentProfile.objects.filter(class_group_id=int(class_group_id))
             Grade.objects.bulk_create([
                 Grade(evaluation=evaluation, student=s, status=Grade.Status.PRESENT)
@@ -128,7 +129,6 @@ def evaluation_entry(request: HttpRequest, evaluation_id: int) -> HttpResponse:
                 status_raw = request.POST.get(f"status_{g.id}") or Grade.Status.PRESENT
                 if value_raw is None or value_raw == "":
                     g.value = None
-                    # Si pas de valeur → PRESENT par défaut, sinon statut choisi
                     g.status = status_raw if status_raw in Grade.Status.values else Grade.Status.PRESENT
                 else:
                     try:
@@ -176,14 +176,35 @@ def evaluation_list(request: HttpRequest) -> HttpResponse:
         .select_related("subject", "class_group", "term")
         .order_by("-date")
     )
-    return render(request, "academics/evaluation_list.html", {"evaluations": qs})
+
+    subject_id = request.GET.get("subject")
+    class_group_id = request.GET.get("class_group")
+    query = (request.GET.get("q") or "").strip()
+
+    if subject_id:
+        qs = qs.filter(subject_id=subject_id)
+    if class_group_id:
+        qs = qs.filter(class_group_id=class_group_id)
+    if query:
+        qs = qs.filter(title__icontains=query)
+
+    context = {
+        "evaluations": qs,
+        "subjects": Subject.objects.filter(evaluations__teacher=teacher).distinct().order_by("name"),
+        "class_groups": ClassGroup.objects.filter(evaluations__teacher=teacher).distinct().order_by("name"),
+        "filters": {
+            "subject": subject_id or "",
+            "class_group": class_group_id or "",
+            "q": query,
+        },
+    }
+    return render(request, "academics/evaluation_list.html", context)
 
 
 # ---------- Élève / Parent : relevé de notes ----------
 
 
 def _resolve_student(request: HttpRequest) -> StudentProfile | None:
-    """Récupère le StudentProfile de l'élève connecté ou de l'enfant sélectionné (parent)."""
     if request.user.is_student:
         return getattr(request.user, "student_profile", None)
     if request.user.is_parent:
@@ -221,7 +242,6 @@ def grades_view(request: HttpRequest) -> HttpResponse:
         except (ValueError, Term.DoesNotExist):
             pass
 
-    # Toutes les notes du trimestre pour l'élève
     grades_qs = (
         Grade.objects
         .filter(student=student, evaluation__term=term)
@@ -229,7 +249,6 @@ def grades_view(request: HttpRequest) -> HttpResponse:
         .order_by("evaluation__subject__name", "-evaluation__date")
     )
 
-    # Stats par matière
     subjects_data = []
     subjects_seen = set()
     for g in grades_qs:
@@ -263,10 +282,10 @@ def grades_view(request: HttpRequest) -> HttpResponse:
         })
 
     general_avg = weighted_average(student, term)
+    rank = student_rank(student, term)
     present_count = grades_qs.filter(status=Grade.Status.PRESENT).count()
     absent_count = grades_qs.filter(status=Grade.Status.ABSENT).count()
 
-    # Sélecteur d'enfant pour les parents
     children = []
     if request.user.is_parent:
         children = list(request.user.parent_profile.children.select_related("user"))
@@ -276,6 +295,7 @@ def grades_view(request: HttpRequest) -> HttpResponse:
         "term": term,
         "terms": terms,
         "general_average": general_avg,
+        "rank": rank,
         "subjects_data": subjects_data,
         "present_count": present_count,
         "absent_count": absent_count,
@@ -289,19 +309,10 @@ def grades_view(request: HttpRequest) -> HttpResponse:
 
 
 def _parse_grade_payload(request: HttpRequest) -> tuple[float | None, str, str]:
-    """Décode la valeur / le statut envoyés en AJAX depuis le formulaire Excel-like.
-
-    Accepte :
-    - ``value`` : numérique ou vide ; les chaînes « ABS »/« DISP »/« NR »
-      sont reconnues comme raccourcis de statut (cf. template).
-    - ``status`` : code statut (``PRESENT``, ``ABSENT``…).
-    - ``comment`` : commentaire libre.
-    """
     raw_value = (request.POST.get("value") or "").strip()
     raw_status = (request.POST.get("status") or "").strip().upper()
     comment = (request.POST.get("comment") or "").strip()
 
-    # Raccourcis clavier
     shortcuts = {
         "ABS": Grade.Status.ABSENT,
         "A": Grade.Status.ABSENT,
@@ -317,10 +328,8 @@ def _parse_grade_payload(request: HttpRequest) -> tuple[float | None, str, str]:
     if raw_value.upper() in shortcuts:
         status = shortcuts[raw_value.upper()]
     elif raw_value == "":
-        # Pas de valeur ni raccourci → on conserve le statut fourni
         status = status or Grade.Status.PRESENT
     else:
-        # Numérique (on accepte virgule ou point)
         normalized = raw_value.replace(",", ".")
         try:
             value = float(normalized)
@@ -328,7 +337,6 @@ def _parse_grade_payload(request: HttpRequest) -> tuple[float | None, str, str]:
                 value = 0.0
             status = Grade.Status.PRESENT
         except ValueError:
-            # Texte libre non reconnu → pas de valeur, on conserve le statut
             value = None
             status = status or Grade.Status.PRESENT
 
@@ -341,7 +349,6 @@ def _parse_grade_payload(request: HttpRequest) -> tuple[float | None, str, str]:
 @login_required
 @require_POST
 def grade_save_ajax(request: HttpRequest, grade_id: int) -> JsonResponse:
-    """Endpoint AJAX : met à jour une note individuelle et renvoie les stats live."""
     if not request.user.is_teacher:
         return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
 
@@ -349,7 +356,6 @@ def grade_save_ajax(request: HttpRequest, grade_id: int) -> JsonResponse:
         Grade.objects.select_related("evaluation", "student__user"),
         id=grade_id,
     )
-    # Un prof ne modifie que les notes de ses propres évaluations
     teacher_profile = getattr(request.user, "teacher_profile", None)
     if (
         not request.user.is_admin
@@ -386,8 +392,6 @@ def grade_save_ajax(request: HttpRequest, grade_id: int) -> JsonResponse:
 @login_required
 @require_POST
 def evaluation_save_all(request: HttpRequest, evaluation_id: int) -> HttpResponse:
-    """Sauvegarde « bulk » via le bouton collant (équivalent de la soumission
-    de formulaire classique, conservée pour les navigateurs sans JS)."""
     if not request.user.is_teacher:
         raise PermissionDenied
 
@@ -397,7 +401,6 @@ def evaluation_save_all(request: HttpRequest, evaluation_id: int) -> HttpRespons
     with transaction.atomic():
         saved = 0
         for g in grades:
-            # Le payload bulk envoie value_<id>/status_<id>/comment_<id>
             synthetic = type("Req", (), {})()
             synthetic.POST = {
                 "value": request.POST.get(f"value_{g.id}", ""),

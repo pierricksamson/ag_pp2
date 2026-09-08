@@ -29,4 +29,26 @@
         <p>Aucun profil professeur associe a ce compte.</p>
     {% endif %}
 </div>
+<div class="card">
+    <h2>Notes à saisir</h2>
+    {% if pending_evaluations %}
+        <table>
+            <thead>
+                <tr><th>Évaluation</th><th>Classe</th><th>Manquantes</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for row in pending_evaluations %}
+                    <tr>
+                        <td>{{ row.evaluation.title }}</td>
+                        <td>{{ row.evaluation.class_group }}</td>
+                        <td>{{ row.missing }}</td>
+                        <td><a href="{% url 'academics:evaluation_entry' row.evaluation.id %}">Saisir</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Toutes les notes sont saisies.</p>
+    {% endif %}
+</div>
 {% endblock %}

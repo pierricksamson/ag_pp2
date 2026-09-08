@@ -20,7 +20,27 @@
         <p>Aucun profil parent associe.</p>
     {% endif %}
 </div>
-
+<div class="card">
+    <h2>Vie scolaire de mes enfants</h2>
+    {% if children_stats %}
+        <table>
+            <thead>
+                <tr><th>Enfant</th><th>Absences non justifiées</th><th>Retards en attente</th></tr>
+            </thead>
+            <tbody>
+                {% for row in children_stats %}
+                    <tr>
+                        <td>{{ row.child.user.get_full_name }}</td>
+                        <td>{{ row.absences_non_justifiees }}</td>
+                        <td>{{ row.retards_en_attente }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune donnée disponible.</p>
+    {% endif %}
+</div>
 <div class="card">
     <h2>Mes enfants</h2>
     {% if children %}
