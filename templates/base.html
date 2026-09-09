@@ -105,6 +105,7 @@
               </a>
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
               <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-comments mr-1.5"></i>Chat
@@ -129,6 +130,7 @@
               {% endif %}
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
             {% elif user.is_parent %}
               <a href="{% url 'users:dashboard_parent' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_parent' %}text-brand-600 border-brand-500{% endif %}">
@@ -152,6 +154,7 @@
               {% endwith %}
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
             {% elif user.is_admin %}
               <a href="{% url 'users:dashboard_admin' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
@@ -168,6 +171,7 @@
               </a>
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
               <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-comments mr-1.5"></i>Chat

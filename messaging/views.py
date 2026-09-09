@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.contrib import messages as django_messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -36,16 +37,39 @@ def _rows_for(user: User, kind: str) -> list[dict]:
     return rows
 
 
-def _mail_conversations(user: User) -> list[Conversation]:
+def _mail_conversations(user: User) -> list[dict]:
+    """
+    Retourne les conversations MAIL où l'utilisateur est destinataire (to/cc/bcc)
+    d'au moins un message non supprimé et non brouillon.
+    """
+    # Conversations où l'utilisateur est dans to_recipients, cc_recipients ou bcc_recipients
+    # d'un message MAIL non supprimé et non brouillon
     conversations = (
-        Conversation.objects.filter(kind=ConversationKind.MAIL)
+        Conversation.objects.filter(
+            kind=ConversationKind.MAIL,
+            messages__deleted_at__isnull=True,
+            messages__is_draft=False,
+        )
+        .filter(
+            Q(messages__to_recipients=user) |
+            Q(messages__cc_recipients=user) |
+            Q(messages__bcc_recipients=user)
+        )
         .prefetch_related("participants", "messages")
         .distinct()
     )
     rows = []
     for c in conversations:
-        last = c.messages.filter(deleted_at__isnull=True).last()
-        unread = c.messages.filter(deleted_at__isnull=True).exclude(sender=user).filter(read_at__isnull=True).count()
+        # Dernier message visible (non supprimé, non brouillon)
+        last = c.messages.filter(deleted_at__isnull=True, is_draft=False).last()
+        # Messages non lus reçus par l'utilisateur dans cette conversation
+        unread = c.messages.filter(
+            deleted_at__isnull=True,
+            is_draft=False
+        ).exclude(sender=user).filter(
+            models.Q(to_recipients=user) | models.Q(cc_recipients=user) | models.Q(bcc_recipients=user),
+            read_at__isnull=True
+        ).count()
         others = c.participants.exclude(id=user.id)
         rows.append({
             "conversation": c,

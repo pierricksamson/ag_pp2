@@ -44,7 +44,7 @@ class Message(models.Model):
         "users.User", related_name="bcc_messages", blank=True, verbose_name="Copie cachée"
     )
     subject = models.CharField(max_length=120, blank=True)
-    body = models.TextField()
+    body = models.TextField(blank=True)
     sent_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
     is_draft = models.BooleanField(default=False)

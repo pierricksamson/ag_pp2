@@ -60,7 +60,7 @@
                                     {% for u in message.to_recipients.all %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
                                 </span>
                                 {% if message.subject %}
-                                    <span class="text-xs text-slate-400 truncate">— {{ message.subject }}</span>
+                                    <span class="text-sm font-medium text-slate-700 truncate">— {{ message.subject }}</span>
                                 {% endif %}
                             </div>
                             <p class="text-sm text-slate-500 truncate">
