@@ -42,8 +42,6 @@ def _mail_conversations(user: User) -> list[dict]:
     Retourne les conversations MAIL où l'utilisateur est destinataire (to/cc/bcc)
     d'au moins un message non supprimé et non brouillon.
     """
-    # Conversations où l'utilisateur est dans to_recipients, cc_recipients ou bcc_recipients
-    # d'un message MAIL non supprimé et non brouillon
     conversations = (
         Conversation.objects.filter(
             kind=ConversationKind.MAIL,
@@ -60,9 +58,7 @@ def _mail_conversations(user: User) -> list[dict]:
     )
     rows = []
     for c in conversations:
-        # Dernier message visible (non supprimé, non brouillon)
         last = c.messages.filter(deleted_at__isnull=True, is_draft=False).last()
-        # Messages non lus reçus par l'utilisateur dans cette conversation
         unread = c.messages.filter(
             deleted_at__isnull=True,
             is_draft=False
@@ -91,6 +87,7 @@ def inbox(request: HttpRequest) -> HttpResponse:
         deleted_at__isnull=True,
     ).count()
     draft_count = Message.objects.filter(
+        sender=request.user,
         is_draft=True,
         deleted_at__isnull=True,
     ).count()
@@ -107,10 +104,11 @@ def sent(request: HttpRequest) -> HttpResponse:
     sent_messages = (
         Message.objects.filter(sender=request.user, is_draft=False, deleted_at__isnull=True)
         .select_related("conversation")
+        .prefetch_related("to_recipients", "cc_recipients")
         .order_by("-sent_at")
     )
-    # Also get draft count for sidebar
     draft_count = Message.objects.filter(
+        sender=request.user,
         is_draft=True,
         deleted_at__isnull=True,
     ).count()
@@ -122,10 +120,11 @@ def sent(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def drafts(request: HttpRequest) -> HttpResponse:
-    """Afficher les messages brouillons (non envoyés)."""
+    """Afficher MES brouillons (non envoyés)."""
     drafts = (
-        Message.objects.filter(is_draft=True, deleted_at__isnull=True)
+        Message.objects.filter(sender=request.user, is_draft=True, deleted_at__isnull=True)
         .select_related("sender", "conversation")
+        .prefetch_related("to_recipients")
         .order_by("-sent_at")
     )
     draft_count = drafts.count()
@@ -138,8 +137,9 @@ def drafts(request: HttpRequest) -> HttpResponse:
 @login_required
 def trash(request: HttpRequest) -> HttpResponse:
     """Afficher les messages supprimés (corbeille)."""
-    deleted = Message.objects.filter(deleted_at__isnull=False).order_by("-sent_at")
+    deleted = Message.objects.filter(sender=request.user, deleted_at__isnull=False).order_by("-sent_at")
     draft_count = Message.objects.filter(
+        sender=request.user,
         is_draft=True,
         deleted_at__isnull=True,
     ).count()
@@ -151,69 +151,53 @@ def trash(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def new_conversation(request: HttpRequest, message_id: int = None) -> HttpResponse:
+    """
+    Compose un nouveau message, répond, transfère — ou modifie un brouillon existant.
+
+    Quand ``message_id`` est fourni, trois cas possibles :
+      1. Le message visé est un brouillon dont je suis l'auteur → je le modifie
+         sur place (même conversation, même message), sans le dupliquer.
+      2. Le message visé fait partie d'une conversation où je suis déjà
+         participant → c'est une réponse.
+      3. Sinon → c'est un transfert.
+    """
     recipients_qs = User.objects.order_by("role", "last_name", "first_name")
-    initial_recipients = []
+
+    initial_to_ids: list[int] = []
+    initial_cc_ids: list[int] = []
+    initial_bcc_ids: list[int] = []
     draft_body = ""
     draft_subject = ""
     is_reply = False
     is_forward = False
+    editing_draft: Message | None = None
 
     if message_id:
         original_message = get_object_or_404(Message, id=message_id)
-        if original_message.in_reply_to:
-            parent = original_message.in_reply_to
+
+        if original_message.is_draft and original_message.sender_id == request.user.id:
+            # ----- Cas 1 : on modifie son propre brouillon -----
+            editing_draft = original_message
+            draft_subject = original_message.subject
+            draft_body = original_message.body
+            initial_to_ids = list(original_message.to_recipients.values_list("id", flat=True))
+            initial_cc_ids = list(original_message.cc_recipients.values_list("id", flat=True))
+            initial_bcc_ids = list(original_message.bcc_recipients.values_list("id", flat=True))
         else:
-            parent = original_message
+            # ----- Cas 2 / 3 : réponse ou transfert -----
+            parent = original_message.in_reply_to or original_message
+            conversation = parent.conversation
 
-        conversation = parent.conversation
-        is_reply = False
-        is_forward = False
-
-        # Check if the user is a participant in the original conversation
-        if conversation.participants.filter(id=request.user.id).exists():
-            # Reply: notify participants except sender
-            participants = conversation.participants.exclude(id=original_message.sender_id)
-            initial_recipients = list(participants.values_list("id", flat=True))
-            draft_body = f"Re: {original_message.subject or ''}\n\n{original_message.body}\n\n"
-            draft_subject = f"Re: {original_message.subject or ''}"
-            is_reply = True
-        else:
-            # Forward: notify no one by default
-            draft_body = f"Transfert: {original_message.subject or ''}\n\n{original_message.body}\n\n"
-            draft_subject = f"Fwd: {original_message.subject or ''}"
-            is_forward = True
-
-        if request.method == "POST":
-            to_ids = request.POST.getlist("to")
-            cc_ids = request.POST.getlist("cc")
-            bcc_ids = request.POST.getlist("bcc")
-            subject = (request.POST.get("subject") or conversation.subject or "").strip()
-            body = (request.POST.get("body") or "").strip()
-            save_as_draft = request.POST.get("save_as_draft")
-
-            if not to_ids or not body:
-                django_messages.error(request, "Destinataire(s) et message sont obligatoires.")
+            if conversation and conversation.participants.filter(id=request.user.id).exists():
+                participants = conversation.participants.exclude(id=original_message.sender_id)
+                initial_to_ids = list(participants.values_list("id", flat=True))
+                draft_body = f"Re : {original_message.subject or ''}\n\n{original_message.body}\n\n"
+                draft_subject = f"Re : {original_message.subject or ''}"
+                is_reply = True
             else:
-                to_recipients = User.objects.filter(id__in=to_ids)
-                cc_recipients = User.objects.filter(id__in=cc_ids)
-                bcc_recipients = User.objects.filter(id__in=bcc_ids)
-                new_conversation_obj = Conversation.objects.create(kind=ConversationKind.MAIL, subject=subject[:120])
-                new_conversation_obj.participants.add(request.user, *to_recipients, *cc_recipients, *bcc_recipients)
-                message = Message.objects.create(
-                    conversation=new_conversation_obj,
-                    sender=request.user,
-                    subject=subject[:120],
-                    body=body[:5000],
-                    is_draft=False,
-                )
-                message.to_recipients.set(to_recipients)
-                message.cc_recipients.set(cc_recipients)
-                message.bcc_recipients.set(bcc_recipients)
-                django_messages.success(request, "Message envoyé.")
-                return redirect("messaging:conversation_detail", conversation_id=new_conversation_obj.id)
-
-    else:
-        recipients_qs = User.objects.order_by("role", "last_name", "first_name")
+                draft_body = f"Transfert : {original_message.subject or ''}\n\n{original_message.body}\n\n"
+                draft_subject = f"Fwd : {original_message.subject or ''}"
+                is_forward = True
 
         if request.method == "POST":
             to_ids = request.POST.getlist("to")
@@ -221,7 +205,67 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
             bcc_ids = request.POST.getlist("bcc")
             subject = (request.POST.get("subject") or "").strip()
             body = (request.POST.get("body") or "").strip()
-            save_as_draft = request.POST.get("save_as_draft")
+            save_as_draft = bool(request.POST.get("save_as_draft"))
+
+            if not to_ids or not body:
+                django_messages.error(request, "Destinataire(s) et message sont obligatoires.")
+            else:
+                to_recipients = User.objects.filter(id__in=to_ids)
+                cc_recipients = User.objects.filter(id__in=cc_ids)
+                bcc_recipients = User.objects.filter(id__in=bcc_ids)
+
+                if editing_draft is not None:
+                    # On met à jour le brouillon existant au lieu d'en créer un nouveau.
+                    conversation = editing_draft.conversation
+                    conversation.subject = subject[:120]
+                    conversation.save(update_fields=["subject"])
+                    conversation.participants.set([request.user, *to_recipients, *cc_recipients, *bcc_recipients])
+
+                    editing_draft.subject = subject[:120]
+                    editing_draft.body = body[:5000]
+                    editing_draft.is_draft = save_as_draft
+                    editing_draft.save(update_fields=["subject", "body", "is_draft"])
+                    editing_draft.to_recipients.set(to_recipients)
+                    editing_draft.cc_recipients.set(cc_recipients)
+                    editing_draft.bcc_recipients.set(bcc_recipients)
+
+                    if save_as_draft:
+                        django_messages.success(request, "Brouillon mis à jour.")
+                        return redirect("messaging:drafts")
+                    django_messages.success(request, "Message envoyé.")
+                    return redirect("messaging:conversation_detail", conversation_id=conversation.id)
+
+                # Réponse ou transfert : on crée une nouvelle conversation.
+                new_conversation_obj = Conversation.objects.create(kind=ConversationKind.MAIL, subject=subject[:120])
+                new_conversation_obj.participants.add(request.user, *to_recipients, *cc_recipients, *bcc_recipients)
+                message = Message.objects.create(
+                    conversation=new_conversation_obj,
+                    sender=request.user,
+                    subject=subject[:120],
+                    body=body[:5000],
+                    is_draft=save_as_draft,
+                    in_reply_to=original_message if is_reply else None,
+                    forwarded_from=original_message if is_forward else None,
+                )
+                message.to_recipients.set(to_recipients)
+                message.cc_recipients.set(cc_recipients)
+                message.bcc_recipients.set(bcc_recipients)
+
+                if save_as_draft:
+                    django_messages.success(request, "Brouillon enregistré.")
+                    return redirect("messaging:drafts")
+                django_messages.success(request, "Message envoyé.")
+                return redirect("messaging:conversation_detail", conversation_id=new_conversation_obj.id)
+
+    else:
+        # ----- Nouveau message (aucun message_id) -----
+        if request.method == "POST":
+            to_ids = request.POST.getlist("to")
+            cc_ids = request.POST.getlist("cc")
+            bcc_ids = request.POST.getlist("bcc")
+            subject = (request.POST.get("subject") or "").strip()
+            body = (request.POST.get("body") or "").strip()
+            save_as_draft = bool(request.POST.get("save_as_draft"))
 
             if not to_ids or not body:
                 django_messages.error(request, "Destinataire(s) et message sont obligatoires.")
@@ -236,7 +280,7 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
                     sender=request.user,
                     subject=subject[:120],
                     body=body[:5000],
-                    is_draft=bool(save_as_draft),
+                    is_draft=save_as_draft,
                 )
                 message.to_recipients.set(to_recipients)
                 message.cc_recipients.set(cc_recipients)
@@ -247,14 +291,16 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
                 django_messages.success(request, "Message envoyé.")
                 return redirect("messaging:conversation_detail", conversation_id=conversation.id)
 
-    initial_users = User.objects.filter(id__in=initial_recipients) if initial_recipients else []
     return render(request, "messaging/new_conversation.html", {
         "recipients": recipients_qs,
-        "initial_recipients": initial_users,
+        "initial_to_ids": initial_to_ids,
+        "initial_cc_ids": initial_cc_ids,
+        "initial_bcc_ids": initial_bcc_ids,
         "draft_body": draft_body,
         "draft_subject": draft_subject,
         "is_reply": is_reply,
         "is_forward": is_forward,
+        "editing_draft": editing_draft is not None,
     })
 
 

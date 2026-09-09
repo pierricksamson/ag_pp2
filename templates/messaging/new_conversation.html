@@ -9,19 +9,19 @@
             <i class="fa-solid fa-arrow-left mr-1.5"></i> Retour à la messagerie
         </a>
         <h1 class="text-2xl font-bold text-slate-900">
-            {% if is_reply %}Répondre{% elif is_forward %}Transférer{% else %}Nouveau message{% endif %}
+            {% if editing_draft %}Modifier le brouillon{% elif is_reply %}Répondre{% elif is_forward %}Transférer{% else %}Nouveau message{% endif %}
         </h1>
     </div>
 
     <form method="post" class="bg-white rounded-2xl card-shadow p-6 space-y-6">
         {% csrf_token %}
-        
+
         <div class="grid gap-4 md:grid-cols-2">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">À (destinataires)</label>
                     <select name="to" multiple required size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
                         {% for u in recipients %}
-                            <option value="{{ u.id }}"{% if initial_recipients and u.id in initial_recipients %} selected{% endif %}>
+                            <option value="{{ u.id }}"{% if u.id in initial_to_ids %} selected{% endif %}>
                                 {{ u.get_full_name }} ({{ u.get_role_display }})
                             </option>
                         {% endfor %}
@@ -32,19 +32,19 @@
                 <label class="block text-xs font-semibold text-slate-500 mb-1">CC (copie)</label>
                 <select name="cc" multiple size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
                     {% for u in recipients %}
-                        <option value="{{ u.id }}">{{ u.get_full_name }} ({{ u.get_role_display }})</option>
+                        <option value="{{ u.id }}"{% if u.id in initial_cc_ids %} selected{% endif %}>{{ u.get_full_name }} ({{ u.get_role_display }})</option>
                     {% endfor %}
                 </select>
                 <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
             </div>
         </div>
-        
+
         <div class="grid gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">BCC (copie cachée)</label>
                 <select name="bcc" multiple size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
                     {% for u in recipients %}
-                        <option value="{{ u.id }}">{{ u.get_full_name }} ({{ u.get_role_display }})</option>
+                        <option value="{{ u.id }}"{% if u.id in initial_bcc_ids %} selected{% endif %}>{{ u.get_full_name }} ({{ u.get_role_display }})</option>
                     {% endfor %}
                 </select>
                 <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
@@ -54,18 +54,18 @@
                 <input type="text" name="subject" maxlength="120" value="{{ draft_subject }}" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
             </div>
         </div>
-        
+
         <div>
             <label class="block text-xs font-semibold text-slate-500 mb-1">Message</label>
             <textarea name="body" rows="8" required class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 resize-none">{{ draft_body }}</textarea>
         </div>
-        
+
         <div class="flex items-center gap-4">
             <label class="flex items-center gap-2 text-sm text-slate-600">
-                <input type="checkbox" name="save_as_draft" value="1"> Enregistrer comme brouillon
+                <input type="checkbox" name="save_as_draft" value="1" {% if editing_draft %}checked{% endif %}> Enregistrer comme brouillon
             </label>
             <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm ml-auto">
-                {% if is_reply %}<i class="fa-solid fa-reply"></i> Envoyer la réponse{% elif is_forward %}<i class="fa-solid fa-forward"></i> Envoyer le transfert{% else %}<i class="fa-solid fa-paper-plane"></i> Envoyer{% endif %}
+                {% if editing_draft %}<i class="fa-solid fa-floppy-disk"></i> Enregistrer{% elif is_reply %}<i class="fa-solid fa-reply"></i> Envoyer la réponse{% elif is_forward %}<i class="fa-solid fa-forward"></i> Envoyer le transfert{% else %}<i class="fa-solid fa-paper-plane"></i> Envoyer{% endif %}
             </button>
         </div>
     </form>
