@@ -67,7 +67,7 @@ def _mail_conversations(user: User) -> list[dict]:
             deleted_at__isnull=True,
             is_draft=False
         ).exclude(sender=user).filter(
-            models.Q(to_recipients=user) | models.Q(cc_recipients=user) | models.Q(bcc_recipients=user),
+            Q(to_recipients=user) | Q(cc_recipients=user) | Q(bcc_recipients=user),
             read_at__isnull=True
         ).count()
         others = c.participants.exclude(id=user.id)
@@ -157,18 +157,18 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
     draft_subject = ""
     is_reply = False
     is_forward = False
-    
+
     if message_id:
         original_message = get_object_or_404(Message, id=message_id)
         if original_message.in_reply_to:
             parent = original_message.in_reply_to
         else:
             parent = original_message
-        
+
         conversation = parent.conversation
         is_reply = False
         is_forward = False
-        
+
         # Check if the user is a participant in the original conversation
         if conversation.participants.filter(id=request.user.id).exists():
             # Reply: notify participants except sender
@@ -182,7 +182,7 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
             draft_body = f"Transfert: {original_message.subject or ''}\n\n{original_message.body}\n\n"
             draft_subject = f"Fwd: {original_message.subject or ''}"
             is_forward = True
-        
+
         if request.method == "POST":
             to_ids = request.POST.getlist("to")
             cc_ids = request.POST.getlist("cc")
