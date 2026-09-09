@@ -17,100 +17,115 @@
     </div>
 
     {% if conversation.kind == "MAIL" %}
-        <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-4">
-            <div class="border-b border-slate-100 px-6 py-4 space-y-3">
-                <h1 class="text-xl font-bold text-slate-900">
+        <!-- Mail header -->
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-6">
+            <div class="p-6 border-b border-slate-100">
+                <h1 class="text-3xl font-bold text-slate-900 mb-2">
                     {% if conversation.subject %}{{ conversation.subject }}{% else %}Sans objet{% endif %}
                 </h1>
-                <div class="flex items-center gap-4 text-sm text-slate-600">
-                    <div>
-                        <span class="font-semibold text-slate-900">De :</span>
-                        {% for u in conversation.participants.all %}
-                            {% if u != request.user %}{{ u.get_full_name }}{% endif %}
-                        {% endfor %}
-                    </div>
-                    <div>
-                        <span class="font-semibold text-slate-900">À :</span>
-                        {% for m in conversation.messages.all %}
-                            {% for u in m.to_recipients.all %}
-                                {{ u.get_full_name }}{% if not forloop.last %}, {% endif %}
+                <div class="text-slate-500 mb-4">
+                    <div class="flex items-center gap-4 mb-1">
+                        <span class="font-semibold">De :</span>
+                        <span class="ml-2">
+                            {% for u in conversation.participants.all %}
+                                {% if u != request.user %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endif %}
                             {% endfor %}
-                        {% endfor %}
+                        </span>
                     </div>
-                    <div class="text-xs text-slate-400">
+                    <div class="flex items-center gap-4 mb-1">
+                        <span class="font-semibold">À :</span>
+                        <span class="ml-2">
+                            {% for m in conversation.messages.all %}
+                                {% for u in m.to_recipients.all %}
+                                    {{ u.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    {% if conversation.messages.first.cc_recipients.all %}
+                        <div class="flex items-center gap-4 mb-1">
+                            <span class="font-semibold">CC :</span>
+                            <span class="ml-2">
+                                {% for m in conversation.messages.all %}
+                                    {% for u in m.cc_recipients.all %}
+                                        {{ u.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div class="text-sm">
                         {{ conversation.messages.first.sent_at|date:"d/m/Y H:i" }}
                     </div>
                 </div>
-                {% if conversation.messages.first.cc_recipients.all %}
-                <div class="text-sm text-slate-600">
-                    <span class="font-semibold text-slate-900">CC :</span>
-                    {% for m in conversation.messages.all %}
-                        {% for u in m.cc_recipients.all %}
-                            {{ u.get_full_name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-                {% endif %}
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex flex-wrap gap-3 p-6 border-t border-slate-100">
+                <a href="{% url 'messaging:reply' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
+                    <i class="fa-solid fa-reply"></i> Répondre
+                </a>
+                <a href="{% url 'messaging:forward' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium">
+                    <i class="fa-solid fa-forward"></i> Transférer
+                </a>
+                <form method="post" action="{% url 'messaging:delete_message' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 font-medium">
+                    {% csrf_token %}
+                    <button type="submit">
+                        <i class="fa-solid fa-trash"></i> Supprimer
+                    </button>
+                </form>
             </div>
         </div>
     {% endif %}
 
-    <div class="bg-white rounded-2xl card-shadow overflow-hidden mb-4">
+    <!-- Messages -->
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden">
         {% if conversation.kind == "CHAT" %}
-        <div class="max-h-[60vh] overflow-y-auto p-6 space-y-4" x-data="conversationThread({
-            sendUrl: '{% url 'messaging:send_message_ajax' conversation.id %}',
-            userId: {{ request.user.id }},
-            conversationKind: '{{ conversation.kind }}'
-        })">
-            <template x-for="m in messages" :key="m.id">
-                <div class="flex" :class="m.sender_id === userId ? 'justify-end' : 'justify-start'">
-                    <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm"
-                         :class="m.sender_id === userId ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'">
-                        <div class="font-semibold text-xs mb-0.5" x-show="m.sender_id !== userId" x-text="m.sender"></div>
-                        <div x-text="m.body" class="whitespace-pre-wrap"></div>
-                        <div class="text-[10px] opacity-70 mt-1 text-right" x-text="m.sent_at"></div>
+            <!-- Chat view -->
+            <div class="max-h-[60vh] overflow-y-auto p-6 space-y-4" x-data="conversationThread({
+                sendUrl: '{% url 'messaging:send_message_ajax' conversation.id %}',
+                userId: {{ request.user.id }},
+                conversationKind: '{{ conversation.kind }}'
+            })">
+                <template x-for="m in messages" :key="m.id">
+                    <div class="flex" :class="m.sender_id === userId ? 'justify-end' : 'justify-start'">
+                        <div class="max-w-[75%] rounded-2xl px-4 py-2 text-sm"
+                             :class="m.sender_id === userId ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-800'">
+                            <div class="font-semibold text-xs mb-0.5" x-show="m.sender_id !== userId" x-text="m.sender"></div>
+                            <div x-text="m.body" class="whitespace-pre-wrap"></div>
+                            <div class="text-[10px] opacity-70 mt-1 text-right" x-text="m.sent_at"></div>
+                        </div>
                     </div>
-                </div>
-            </template>
-        </div>
+                </template>
+            </div>
         {% else %}
-        <div class="max-h-[50vh] overflow-y-auto p-6 space-y-4">
-            {% for m in conversation.messages.all %}
-                <div class="flex items-start gap-3 {{ m.sender_id == request.user.id ? 'justify-end' : '' }}">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="font-semibold text-sm text-slate-900">{{ m.sender.get_full_name }}</span>
-                            <span class="text-xs text-slate-400">{{ m.sent_at|date:"d/m/Y H:i" }}</span>
-                        </div>
-                        <div class="text-sm text-slate-700 whitespace-pre-wrap">
-                            {{ m.body|linebreaks }}
+            <!-- Mail view -->
+            <div class="p-6 space-y-6">
+                {% for m in conversation.messages.all %}
+                    <div class="border-b border-slate-100 last:border-b-0 pb-4">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 text-xs">
+                                {{ m.sender.first_name|first }}{{ m.sender.last_name|first }}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-lg font-medium text-slate-900">{{ m.sender.get_full_name }}</h3>
+                                    <p class="text-sm text-slate-500">{{ m.sent_at|date:"d/m/Y H:i" }}</p>
+                                </div>
+                                <div class="prose prose-sm text-slate-700 max-w-none">
+                                    {{ m.body|linebreaks }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
-        </div>
+                {% empty %}
+                    <div class="p-8 text-center text-slate-500">
+                        <i class="fa-solid fa-envelope text-4xl mb-4"></i>
+                        <p>Aucun message dans cette conversation.</p>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
     </div>
-
-    {% if conversation.kind == "MAIL" %}
-    <div class="bg-white rounded-2xl card-shadow p-4">
-        <div class="flex items-center gap-2 mb-3">
-            <a href="{% url 'messaging:reply' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-3 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium">
-                <i class="fa-solid fa-reply"></i> Répondre
-            </a>
-            <a href="{% url 'messaging:forward' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-3 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 text-sm font-medium">
-                <i class="fa-solid fa-forward"></i> Transférer
-            </a>
-        </div>
-        <form method="post" class="flex items-end gap-2">
-            {% csrf_token %}
-            <textarea name="body" rows="2" placeholder="Votre message…"
-                      class="flex-1 px-3 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 text-sm resize-none"></textarea>
-            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
-                <i class="fa-solid fa-paper-plane"></i> Envoyer
-            </button>
-        </form>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

@@ -178,13 +178,13 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
                 message = Message.objects.create(
                     conversation=new_conversation_obj,
                     sender=request.user,
-                    to_recipients=to_recipients,
-                    cc_recipients=cc_recipients,
-                    bcc_recipients=bcc_recipients,
                     subject=subject[:120],
                     body=body[:5000],
                     is_draft=False,
                 )
+                message.to_recipients.set(to_recipients)
+                message.cc_recipients.set(cc_recipients)
+                message.bcc_recipients.set(bcc_recipients)
                 django_messages.success(request, "Message envoyé.")
                 return redirect("messaging:conversation_detail", conversation_id=new_conversation_obj.id)
 
@@ -210,13 +210,13 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
                 message = Message.objects.create(
                     conversation=conversation,
                     sender=request.user,
-                    to_recipients=to_recipients,
-                    cc_recipients=cc_recipients,
-                    bcc_recipients=bcc_recipients,
                     subject=subject[:120],
                     body=body[:5000],
                     is_draft=bool(save_as_draft),
                 )
+                message.to_recipients.set(to_recipients)
+                message.cc_recipients.set(cc_recipients)
+                message.bcc_recipients.set(bcc_recipients)
                 if save_as_draft:
                     django_messages.success(request, "Brouillon enregistré.")
                     return redirect("messaging:drafts")
@@ -332,7 +332,7 @@ def conversation_detail(request: HttpRequest, conversation_id: int) -> HttpRespo
     if conversation.kind == ConversationKind.CHAT and not request.user.is_staff_member:
         raise PermissionDenied
 
-    if request.method == "POST":
+    if conversation.kind == ConversationKind.CHAT and request.method == "POST":
         body = (request.POST.get("body") or "").strip()
         if body:
             Message.objects.create(conversation=conversation, sender=request.user, body=body[:5000])
