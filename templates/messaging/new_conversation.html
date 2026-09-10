@@ -3,23 +3,68 @@
 {% block title %}Nouveau message{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto py-6">
+    <div class="max-w-4xl mx-auto py-6" x-data="{
+        selectedTo: {{ initial_to_ids|safe }}, 
+        selectedCc: {{ initial_cc_ids|safe }}, 
+        selectedBcc: {{ initial_bcc_ids|safe }},
+        autoSaved: false,
+        lastAutoSave: null,
+        autoSaving: false,
+        _saveTimer: null,
+        saveDraft() {
+            const form = document.getElementById('message-form');
+            const data = new FormData(form);
+            this.autoSaving = true;
+            fetch('{% url 'messaging:draft_auto_save' %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.ok) {
+                    this.autoSaved = true;
+                    this.lastAutoSave = new Date().toLocaleTimeString();
+                }
+            })
+            .finally(() => {
+                this.autoSaving = false;
+            });
+        },
+        debouncedSave() {
+            clearTimeout(this._saveTimer);
+            this._saveTimer = setTimeout(() => this.saveDraft(), 1500);
+        }
+    }">
     <div class="mb-6">
         <a href="{% url 'messaging:inbox' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
             <i class="fa-solid fa-arrow-left mr-1.5"></i> Retour à la messagerie
         </a>
         <h1 class="text-2xl font-bold text-slate-900">
-            {% if editing_draft %}Modifier le brouillon{% elif is_reply %}Répondre{% elif is_forward %}Transférer{% else %}Nouveau message{% endif %}
+            {% if editing_draft %}Modifier le brouillon{% elif is_reply %}Répondre{% elif is_reply_all %}Répondre à tous{% elif is_forward %}Transférer{% else %}Nouveau message{% endif %}
         </h1>
+        {% if autoSaved %}
+            <div class="mt-2 flex items-center gap-2 text-sm text-green-600">
+                <i class="fa-solid fa-check-circle"></i>
+                <span id="auto-save-status">Dernière sauvegarde : <span id="auto-save-time">{{ draft_id ? draft_id|date:"H:i" : "jamais" }}</span></span>
+            </div>
+        {% endif %}
     </div>
 
-    <form method="post" class="bg-white rounded-2xl card-shadow p-6 space-y-6">
+    <form id="message-form" method="post" class="bg-white rounded-2xl card-shadow p-6 space-y-6" @change="debouncedSave">
         {% csrf_token %}
+        {% if editing_draft %}
+        <input type="hidden" name="draft_id" value="{{ editing_draft.id }}">
+        {% endif %}
 
         <div class="grid gap-4 md:grid-cols-2">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">À (destinataires)</label>
-                    <select name="to" multiple required size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
+                <div class="relative">
+                    <select name="to" multiple required size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500" x-model="selectedTo">
                         {% for u in recipients %}
                             <option value="{{ u.id }}"{% if u.id in initial_to_ids %} selected{% endif %}>
                                 {{ u.get_full_name }} ({{ u.get_role_display }})
@@ -27,27 +72,32 @@
                         {% endfor %}
                     </select>
                     <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
+                </div>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">CC (copie)</label>
-                <select name="cc" multiple size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
-                    {% for u in recipients %}
-                        <option value="{{ u.id }}"{% if u.id in initial_cc_ids %} selected{% endif %}>{{ u.get_full_name }} ({{ u.get_role_display }})</option>
-                    {% endfor %}
-                </select>
-                <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
+                <div class="relative">
+                    <select name="cc" multiple size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500" x-model="selectedCc">
+                        {% for u in recipients %}
+                            <option value="{{ u.id }}"{% if u.id in initial_cc_ids %} selected{% endif %}>{{ u.get_full_name }} ({{ u.get_role_display }})</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
+                </div>
             </div>
         </div>
 
         <div class="grid gap-4">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">BCC (copie cachée)</label>
-                <select name="bcc" multiple size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500">
-                    {% for u in recipients %}
-                        <option value="{{ u.id }}"{% if u.id in initial_bcc_ids %} selected{% endif %}>{{ u.get_full_name }} ({{ u.get_role_display }})</option>
-                    {% endfor %}
-                </select>
-                <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
+                <div class="relative">
+                    <select name="bcc" multiple size="6" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500" x-model="selectedBcc">
+                        {% for u in recipients %}
+                            <option value="{{ u.id }}"{% if u.id in initial_bcc_ids %} selected{% endif %}>{{ u.get_full_name }} ({{ u.get_role_display }})</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1">Ctrl/Cmd + clic pour sélectionner plusieurs destinataires.</p>
+                </div>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">Sujet (optionnel)</label>
@@ -64,8 +114,11 @@
             <label class="flex items-center gap-2 text-sm text-slate-600">
                 <input type="checkbox" name="save_as_draft" value="1" {% if editing_draft %}checked{% endif %}> Enregistrer comme brouillon
             </label>
+            <button type="button" @click="saveDraft" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium shadow-sm mr-2">
+                <i class="fa-solid fa-floppy-disk"></i> Enregistrer comme brouillon
+            </button>
             <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm ml-auto">
-                {% if editing_draft %}<i class="fa-solid fa-floppy-disk"></i> Enregistrer{% elif is_reply %}<i class="fa-solid fa-reply"></i> Envoyer la réponse{% elif is_forward %}<i class="fa-solid fa-forward"></i> Envoyer le transfert{% else %}<i class="fa-solid fa-paper-plane"></i> Envoyer{% endif %}
+                {% if editing_draft %}<i class="fa-solid fa-floppy-disk"></i> Enregistrer{% elif is_reply %}<i class="fa-solid fa-reply"></i> Envoyer la réponse{% elif is_reply_all %}<i class="fa-solid fa-reply-all"></i> Envoyer à tous{% elif is_forward %}<i class="fa-solid fa-forward"></i> Envoyer le transfert{% else %}<i class="fa-solid fa-paper-plane"></i> Envoyer{% endif %}
             </button>
         </div>
     </form>

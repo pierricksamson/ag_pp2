@@ -3,7 +3,7 @@
 {% block title %}Messagerie{% endblock %}
 
 {% block content %}
-<div class="flex h-[calc(100vh-140px)] bg-white rounded-2xl card-shadow overflow-hidden">
+<div class="flex h-[calc(100vh-140px)] bg-white rounded-2xl card-shadow overflow-hidden" x-data="bulkActions()">
     <!-- Sidebar -->
     <div class="w-64 border-r border-slate-200 bg-slate-50 flex flex-col">
         <div class="p-4 border-b border-slate-200">
@@ -47,64 +47,162 @@
 
     <!-- Main content -->
     <div class="flex-1 overflow-y-auto">
-        <div class="p-6">
+        <div class="p-6" x-data="bulkActions()">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
                     <i class="fa-solid fa-envelope text-brand-600"></i>
                     Messagerie
                 </h1>
-                <div class="flex items-center gap-2 text-sm">
-                    <span class="bg-brand-100 text-brand-700 font-semibold px-3 py-1.5 rounded-full">
-                        {{ mail_total_count }} mails
-                    </span>
-                    {% if mail_unread_count %}
-                    <span class="bg-rose-100 text-rose-700 font-semibold px-3 py-1.5 rounded-full">
-                        {{ mail_unread_count }} non lus
-                    </span>
-                    {% else %}
-                    <span class="bg-emerald-100 text-emerald-700 font-semibold px-3 py-1.5 rounded-full">
-                        Tout est lu
-                    </span>
+                <div class="flex items-center gap-4">
+                    {% if messages %}
+                    <div class="relative">
+                        <button id="bulk-actions-trigger" class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                            Actions groupées
+                        </button>
+                        <!-- Bulk actions dropdown -->
+                        <div x-show="open" x-on:click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-md shadow-lg z-10 hidden">
+                            <div class="py-1">
+                                <button x-on:click="bulkAction('delete')" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    <i class="fa-solid fa-trash mr-2"></i> Supprimer
+                                </button>
+                                <button x-on:click="bulkAction('restore')" class="w-full text-left px-3 py-2 text-sm text-emerald-600 hover:bg-emerald-50">
+                                    <i class="fa-solid fa-rotate-left mr-2"></i> Restaurer
+                                </button>
+                                <button x-on:click="bulkAction('mark_read')" class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50">
+                                    <i class="fa-solid fa-eye mr-2"></i> Marquer comme lu
+                                </button>
+                                <button x-on:click="bulkAction('mark_unread')" class="w-full text-left px-3 py-2 text-sm text-yellow-600 hover:bg-yellow-50">
+                                    <i class="fa-solid fa-eye-slash mr-2"></i> Marquer comme non lu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="bg-brand-100 text-brand-700 font-semibold px-3 py-1.5 rounded-full">
+                            {{ mail_total_count }} mails
+                        </span>
+                        {% if mail_unread_count %}
+                        <span class="bg-rose-100 text-rose-700 font-semibold px-3 py-1.5 rounded-full">
+                            {{ mail_unread_count }} non lus
+                        </span>
+                        {% else %}
+                        <span class="bg-emerald-100 text-emerald-700 font-semibold px-3 py-1.5 rounded-full">
+                            Tout est lu
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
+            {% if messages %}
+            <div class="mb-4 p-3 bg-brand-50 border border-brand-200 rounded-lg">
+                <div class="flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-info-circle text-brand-600"></i>
+                    <span>Action groupée disponible : cochez les messages pour appliquer une action (supprimer, restaurer, marquer comme lu / non lu).</span>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="bg-white rounded-2xl card-shadow overflow-hidden divide-y divide-slate-100">
+                <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-4">
+                    <input type="checkbox" @change="toggleAll" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" title="Tout sélectionner">
+                    <span class="text-sm text-slate-500">Tout sélectionner</span>
+                    <span x-show="selected.length > 0" class="ml-auto text-sm text-brand-600 font-medium">
+                        {{ selected.length }} message(s) sélectionné(s)
+                    </span>
+                    <div x-show="selected.length > 0" class="flex items-center gap-2 ml-4">
+                        <button x-on:click="bulkAction('delete')" class="px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded">
+                            <i class="fa-solid fa-trash mr-1"></i> Supprimer
+                        </button>
+                        <button x-on:click="bulkAction('mark_read')" class="px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 rounded">
+                            <i class="fa-solid fa-eye mr-1"></i> Marquer lu
+                        </button>
+                        <button x-on:click="bulkAction('mark_unread')" class="px-3 py-1.5 text-xs text-yellow-600 hover:bg-yellow-50 rounded">
+                            <i class="fa-solid fa-eye-slash mr-1"></i> Marquer non lu
+                        </button>
+                    </div>
+                </div>
                 {% for row in rows %}
-                    <a href="{% url 'messaging:conversation_detail' row.conversation.id %}" class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition">
-                        <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold shrink-0">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold text-sm truncate">
-                                    {% for u in row.others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                </span>
-                                {% if row.conversation.subject %}
-                                    <span class="text-sm font-medium text-slate-700 truncate">— {{ row.conversation.subject }}</span>
+                    <div class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition">
+                        <input type="checkbox" name="row-select" x-model="selected" value="{{ row.last_message.id }}" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                        <a href="{% url 'messaging:conversation_detail' row.conversation.id %}" class="flex items-center gap-4 flex-1">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold shrink-0">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm truncate">
+                                        {% for u in row.others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                    </span>
+                                    {% if row.conversation.subject %}
+                                        <span class="text-sm font-medium text-slate-700 truncate">— {{ row.conversation.subject }}</span>
+                                    {% endif %}
+                                </div>
+                                <p class="text-sm text-slate-500 truncate">
+                                    {% if row.last_message %}{{ row.last_message.body|truncatechars:200 }}{% else %}Aucun message.{% endif %}
+                                </p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                {% if row.last_message %}
+                                    <div class="text-xs text-slate-400">{{ row.last_message.sent_at|date:"d/m H:i" }}</div>
+                                {% endif %}
+                                {% if row.unread %}
+                                    <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-600 text-white text-[11px] font-bold mt-1">{{ row.unread }}</span>
                                 {% endif %}
                             </div>
-                            <p class="text-sm text-slate-500 truncate">
-                                {% if row.last_message %}{{ row.last_message.body|truncatechars:200 }}{% else %}Aucun message.{% endif %}
-                            </p>
-                        </div>
-                        <div class="text-right shrink-0">
-                            {% if row.last_message %}
-                                <div class="text-xs text-slate-400">{{ row.last_message.sent_at|date:"d/m H:i" }}</div>
-                            {% endif %}
-                            {% if row.unread %}
-                                <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-brand-600 text-white text-[11px] font-bold mt-1">{{ row.unread }}</span>
-                            {% endif %}
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 {% empty %}
                     <div class="px-6 py-12 text-center text-slate-500">
                         <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-3 block"></i>
                         Aucune conversation pour le moment.
                     </div>
                 {% endfor %}
-            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('bulkActions', () => ({
+            open: false,
+            selected: [],
+            selectedAll: false,
+            toggleAll() {
+                const checkboxes = document.querySelectorAll('input[name="row-select"]');
+                if (this.selectedAll) {
+                    this.selected = Array.from(checkboxes).map(el => el.value);
+                } else {
+                    this.selected = [];
+                }
+            },
+            bulkAction(action) {
+                if (this.selected.length === 0) {
+                    alert('Veuillez sélectionner au moins un message.');
+                    return;
+                }
+                fetch('{% url 'messaging:bulk_action' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: new URLSearchParams({
+                        action: action,
+                        message_ids: this.selected.join(',')
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue.');
+                    }
+                });
+            }
+        }));
+    });
+</script>
 {% endblock %}

@@ -20,5 +20,7 @@ urlpatterns = [
     path("<int:message_id>/mark-read/", views.mark_read, name="mark_read"),
     path("<int:message_id>/save-draft/", views.save_draft, name="save_draft"),
     path("<int:message_id>/reply/", views.reply, name="reply"),
-    path("<int:message_id>/forward/", views.forward, name="forward"),
+    path("<int:message_id>/reply-all/", views.reply_all, name="reply_all"),
+    path("draft/auto-save/", views.draft_auto_save, name="draft_auto_save"),
+    path("bulk-action/", views.bulk_action, name="bulk_action"),
 ]

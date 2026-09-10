@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -14,6 +15,18 @@ from users.models import User
 from .models import Conversation, ConversationKind, Message
 
 staff_required = user_passes_test(lambda u: u.is_authenticated and u.is_staff_member)
+
+
+def _recipient_ids(queryset) -> list[int]:
+    return list(queryset.values_list("id", flat=True))
+
+
+def _get_user_recipients(message: Message, user: User) -> tuple[bool, bool, bool]:
+    return (
+        message.to_recipients.filter(id=user.id).exists(),
+        message.cc_recipients.filter(id=user.id).exists(),
+        message.bcc_recipients.filter(id=user.id).exists(),
+    )
 
 
 def _rows_for(user: User, kind: str) -> list[dict]:
@@ -196,6 +209,26 @@ def trash(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
+@require_POST
+def bulk_action(request: HttpRequest) -> HttpResponse:
+    """Action groupée sur plusieurs messages."""
+    action = request.POST.get("action")
+    message_ids = request.POST.getlist("message_ids")
+    messages = Message.objects.filter(id__in=message_ids, sender=request.user)
+
+    if action == "delete":
+        messages.update(deleted_at=timezone.now())
+    elif action == "restore":
+        messages.update(deleted_at=None)
+    elif action == "mark_read":
+        messages.update(read_at=timezone.now())
+    elif action == "mark_unread":
+        messages.update(read_at=None)
+
+    return redirect("messaging:inbox")
+
+
+@login_required
 def new_conversation(request: HttpRequest, message_id: int = None) -> HttpResponse:
     """
     Compose un nouveau message, répond, transfère — ou modifie un brouillon existant.
@@ -215,14 +248,15 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
     draft_body = ""
     draft_subject = ""
     is_reply = False
+    is_reply_all = False
     is_forward = False
     editing_draft: Message | None = None
 
-    if message_id:
+    if message_id or request.GET.get("message_id"):
+        message_id = message_id or int(request.GET.get("message_id"))
         original_message = get_object_or_404(Message, id=message_id)
 
         if original_message.is_draft and original_message.sender_id == request.user.id:
-            # ----- Cas 1 : on modifie son propre brouillon -----
             editing_draft = original_message
             draft_subject = original_message.subject
             draft_body = original_message.body
@@ -230,11 +264,24 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
             initial_cc_ids = list(original_message.cc_recipients.values_list("id", flat=True))
             initial_bcc_ids = list(original_message.bcc_recipients.values_list("id", flat=True))
         else:
-            # ----- Cas 2 / 3 : réponse ou transfert -----
             parent = original_message.in_reply_to or original_message
             conversation = parent.conversation
 
-            if conversation and conversation.participants.filter(id=request.user.id).exists():
+            if request.GET.get("reply_all") == "1":
+                is_reply_all = True
+                draft_subject = f"Re : {original_message.subject or ''}"
+                draft_body = f"Re : {original_message.subject or ''}\n\n{original_message.body}\n\n"
+                initial_to_ids = list(
+                    original_message.to_recipients.exclude(id=request.user.id)
+                    .values_list("id", flat=True)
+                )
+                initial_cc_ids = list(
+                    original_message.cc_recipients.exclude(id=request.user.id)
+                    .values_list("id", flat=True)
+                )
+                if original_message.sender_id != request.user.id:
+                    initial_to_ids.append(original_message.sender_id)
+            elif conversation and conversation.participants.filter(id=request.user.id).exists():
                 participants = conversation.participants.exclude(id=original_message.sender_id)
                 initial_to_ids = list(participants.values_list("id", flat=True))
                 draft_body = f"Re : {original_message.subject or ''}\n\n{original_message.body}\n\n"
@@ -354,7 +401,8 @@ def new_conversation(request: HttpRequest, message_id: int = None) -> HttpRespon
 def reply(request: HttpRequest, message_id: int) -> HttpResponse:
     """Répondre à un message."""
     message = get_object_or_404(Message, id=message_id)
-    if not message.to_recipients.filter(id=request.user.id).exists():
+    # Un CC peut aussi répondre si c'est lui-même
+    if not (message.to_recipients.filter(id=request.user.id) or message.cc_recipients.filter(id=request.user.id)).exists():
         raise PermissionDenied
     return redirect("messaging:new_conversation", message_id=message_id)
 
@@ -364,6 +412,62 @@ def forward(request: HttpRequest, message_id: int) -> HttpResponse:
     """Transférer un message."""
     message = get_object_or_404(Message, id=message_id)
     return redirect("messaging:new_conversation", message_id=message_id)
+
+
+@login_required
+def reply_all(request: HttpRequest, message_id: int) -> HttpResponse:
+    """Répondre à tous les destinataires (expéditeur + TO + CC)."""
+    message = get_object_or_404(Message, id=message_id)
+    is_to = message.to_recipients.filter(id=request.user.id).exists()
+    is_cc = message.cc_recipients.filter(id=request.user.id).exists()
+    if not (is_to or is_cc):
+        raise PermissionDenied
+    url = reverse("messaging:new_conversation")
+    return redirect(f"{url}?message_id={message_id}&reply_all=1")
+
+
+@login_required
+@require_POST
+def draft_auto_save(request: HttpRequest) -> JsonResponse:
+    """Sauvegarde automatique d'un brouillon via AJAX."""
+    to_ids = request.POST.getlist("to")
+    cc_ids = request.POST.getlist("cc")
+    bcc_ids = request.POST.getlist("bcc")
+    subject = (request.POST.get("subject") or "").strip()
+    body = (request.POST.get("body") or "").strip()
+    draft_id = request.POST.get("draft_id")
+
+    if not to_ids and not cc_ids and not bcc_ids:
+        return JsonResponse({"ok": False, "error": "aucun_destinataire"}, status=400)
+
+    to_recipients = User.objects.filter(id__in=to_ids)
+    cc_recipients = User.objects.filter(id__in=cc_ids)
+    bcc_recipients = User.objects.filter(id__in=bcc_ids)
+
+    if draft_id:
+        draft = get_object_or_404(Message, id=draft_id, sender=request.user, is_draft=True)
+        draft.subject = subject[:120]
+        draft.body = body[:5000]
+        draft.save(update_fields=["subject", "body"])
+        draft.to_recipients.set(to_recipients)
+        draft.cc_recipients.set(cc_recipients)
+        draft.bcc_recipients.set(bcc_recipients)
+        conversation = draft.conversation
+    else:
+        conversation = Conversation.objects.create(kind=ConversationKind.MAIL, subject=subject[:120])
+        conversation.participants.add(request.user, *to_recipients, *cc_recipients, *bcc_recipients)
+        draft = Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            subject=subject[:120],
+            body=body[:5000],
+            is_draft=True,
+        )
+        draft.to_recipients.set(to_recipients)
+        draft.cc_recipients.set(cc_recipients)
+        draft.bcc_recipients.set(bcc_recipients)
+
+    return JsonResponse({"ok": True, "draft_id": draft.id})
 
 
 @login_required
