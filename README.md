@@ -61,6 +61,9 @@ L'application est ensuite accessible à l'adresse :
 
 Tous les comptes utilisent le même mot de passe : **`password123`**.
 
+Le compte propriétaire super-administrateur est : **`admin@test.com`** / **`password123`**.
+L'application refuse de démarrer si aucun compte super-administrateur n'existe.
+
 | Rôle       | Email               | Mot de passe   | Accès                                                         |
 |------------|---------------------|----------------|---------------------------------------------------------------|
 | Admin      | `admin@test.com`    | `password123`  | Tout, dont filtres sur l'emploi du temps + admin Django.      |

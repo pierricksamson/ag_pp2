@@ -28,7 +28,9 @@
 
 <div class="card">
     <h2>Administration</h2>
-    <p>Accedez a la console Django pour gerer eleves, professeurs, classes et emplois du temps.</p>
+    <p>Créez les comptes de l'établissement et choisissez qui peut ensuite créer des comptes.</p>
+    <a href="{% url 'users:account_management' %}" class="btn">Gérer les comptes</a>
+    <p class="mt-3">Pour les réglages techniques avancés, utilisez la console Django.</p>
     <a href="{{ admin_url }}" class="btn">Ouvrir la console admin</a>
 </div>
 {% endblock %}

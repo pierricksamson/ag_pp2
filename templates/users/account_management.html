@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des comptes{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Créer un compte</h1>
+    <p>Le compte est créé immédiatement avec la fonction et le mot de passe choisis.</p>
+    <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_account">
+        {% for field in form %}
+        <div{% if field.name == 'is_active' %} class="md:col-span-2 flex items-center gap-2"{% endif %}>
+            {% if field.name == 'is_active' %}{{ field }}{% endif %}
+            <label for="{{ field.id_for_label }}"{% if field.name == 'is_active' %} class="font-medium"{% endif %}>{{ field.label }}</label>
+            {% if field.name != 'is_active' %}{{ field }}{% endif %}
+            {% for error in field.errors %}<p class="text-rose-600 text-sm">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        {% if form.non_field_errors %}<div class="md:col-span-2 text-rose-600">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="md:col-span-2"><button type="submit" class="btn">Créer le compte</button></div>
+    </form>
+</div>
+
+{% if can_edit_permissions %}
+<div class="card">
+    <h2>Autoriser la création de comptes</h2>
+    <p>Cochez les personnes et les groupes autorisés à créer d'autres comptes.</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_permissions">
+        <h3>Personnes</h3>
+        <div class="space-y-2">
+            {% for person in users %}
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="account_users" value="{{ person.pk }}"{% if account_permission in person.user_permissions.all %} checked{% endif %}>
+                <span>{{ person.get_full_name|default:person.email }} — {{ person.get_role_display }}</span>
+            </label>
+            {% empty %}<p>Aucune autre personne n'est encore enregistrée.</p>{% endfor %}
+        </div>
+        <h3 class="mt-5">Groupes</h3>
+        <div class="space-y-2">
+            {% for group in groups %}
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="account_groups" value="{{ group.pk }}"{% if account_permission in group.permissions.all %} checked{% endif %}>
+                <span>{{ group.name }}</span>
+            </label>
+            {% empty %}<p>Aucun groupe Django n'est encore créé.</p>{% endfor %}
+        </div>
+        <button type="submit" class="btn mt-5">Enregistrer les autorisations</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

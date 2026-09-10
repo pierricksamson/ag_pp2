@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -6,9 +7,14 @@ from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 
-from .models import Role
+from .forms import AccountCreationForm
+from .models import Role, User
+
+
+def _can_manage_accounts(user) -> bool:
+    return user.is_superuser or user.has_perm("users.can_create_accounts")
 
 
 # ---------- Authentification par email ----------
@@ -167,4 +173,60 @@ def parent_dashboard(request: HttpRequest) -> HttpResponse:
         request,
         "users/dashboard_parent.html",
         {"profile": profile, "children": children},
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def account_management(request: HttpRequest) -> HttpResponse:
+    """Création de comptes et délégation du droit de création."""
+    if not _can_manage_accounts(request.user):
+        messages.error(request, "Vous n'êtes pas autorisé à créer des comptes.")
+        return redirect("users:role_redirect")
+
+    account_permission = Permission.objects.get(
+        content_type__app_label="users",
+        codename="can_create_accounts",
+    )
+    users = User.objects.exclude(pk=request.user.pk).prefetch_related("user_permissions", "groups")
+    groups = Group.objects.prefetch_related("permissions").order_by("name")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "create_account":
+            form = AccountCreationForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Le compte a été créé.")
+                return redirect("users:account_management")
+        elif action == "save_permissions" and request.user.is_superuser:
+            allowed_user_ids = {int(value) for value in request.POST.getlist("account_users") if value.isdigit()}
+            allowed_group_ids = {int(value) for value in request.POST.getlist("account_groups") if value.isdigit()}
+            for user in User.objects.exclude(pk=request.user.pk):
+                if user.pk in allowed_user_ids:
+                    user.user_permissions.add(account_permission)
+                else:
+                    user.user_permissions.remove(account_permission)
+            for group in Group.objects.all():
+                if group.pk in allowed_group_ids:
+                    group.permissions.add(account_permission)
+                else:
+                    group.permissions.remove(account_permission)
+            messages.success(request, "Les autorisations de création ont été mises à jour.")
+            return redirect("users:account_management")
+        else:
+            form = AccountCreationForm()
+    else:
+        form = AccountCreationForm()
+
+    return render(
+        request,
+        "users/account_management.html",
+        {
+            "form": form,
+            "users": users,
+            "groups": groups,
+            "account_permission": account_permission,
+            "can_edit_permissions": request.user.is_superuser,
+        },
     )

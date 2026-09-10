@@ -13,4 +13,7 @@ from django.core.asgi import get_asgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
+from .startup import ensure_owner_exists
+
 application = get_asgi_application()
+ensure_owner_exists()

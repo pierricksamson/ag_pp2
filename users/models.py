@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -9,6 +10,11 @@ class Role(models.TextChoices):
     TEACHER = "TEACHER", _("Professeur")
     STUDENT = "STUDENT", _("Élève")
     PARENT = "PARENT", _("Parent")
+    NURSE = "NURSE", _("Infirmier / infirmière")
+    SCHOOL_LIFE = "SCHOOL_LIFE", _("Vie scolaire")
+    DIRECTOR = "DIRECTOR", _("Directeur / directrice")
+    SECRETARY = "SECRETARY", _("Secrétaire")
+    ADMINISTRATION = "ADMINISTRATION", _("Administration")
 
 
 class UserManager(BaseUserManager):
@@ -33,6 +39,9 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password, **extra_fields):
+        if self.model.objects.filter(is_superuser=True).exists():
+            raise ValueError(_("Un seul super-administrateur/owner est autorisé par base."))
+
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("role", Role.ADMIN)
@@ -71,7 +80,7 @@ class User(AbstractUser):
     last_name = models.CharField(_("nom"), max_length=80)
     role = models.CharField(
         _("rôle"),
-        max_length=10,
+        max_length=20,
         choices=Role.choices,
         default=Role.STUDENT,
         db_index=True,
@@ -95,6 +104,9 @@ class User(AbstractUser):
         verbose_name = _("utilisateur")
         verbose_name_plural = _("utilisateurs")
         ordering = ("last_name", "first_name")
+        permissions = (
+            ("can_create_accounts", _("Peut créer des comptes")),
+        )
         indexes = [
             models.Index(fields=["role"]),
             models.Index(fields=["email"]),
@@ -103,6 +115,11 @@ class User(AbstractUser):
     def __str__(self):
         full_name = self.get_full_name()
         return f"{full_name} ({self.get_role_display()})" if full_name else self.email
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser and User.objects.filter(is_superuser=True).exclude(pk=self.pk).exists():
+            raise ValidationError(_("Un seul super-administrateur/owner est autorisé par base."))
+        return super().save(*args, **kwargs)
 
     # ----- Helpers de rôle -----
     STAFF_ROLES = (Role.ADMIN, Role.TEACHER)
