@@ -107,10 +107,10 @@
 
             <div class="bg-white rounded-2xl card-shadow overflow-hidden divide-y divide-slate-100">
                 <div class="px-4 py-3 border-b border-slate-100 flex items-center gap-4">
-                    <input type="checkbox" @change="toggleAll" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" title="Tout sélectionner">
+                    <input type="checkbox" :checked="allMessagesSelected" @change="toggleAll($event)" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500" title="Tout sélectionner">
                     <span class="text-sm text-slate-500">Tout sélectionner</span>
                     <span x-show="selected.length > 0" class="ml-auto text-sm text-brand-600 font-medium">
-                        {{ selected.length }} message(s) sélectionné(s)
+                        <span x-text="selected.length"></span> message(s) sélectionné(s)
                     </span>
                     <div x-show="selected.length > 0" class="flex items-center gap-2 ml-4">
                         <button x-on:click="bulkAction('delete')" class="px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded">
@@ -170,10 +170,13 @@
         Alpine.data('bulkActions', () => ({
             open: false,
             selected: [],
-            selectedAll: false,
-            toggleAll() {
+            get allMessagesSelected() {
                 const checkboxes = document.querySelectorAll('input[name="row-select"]');
-                if (this.selectedAll) {
+                return checkboxes.length > 0 && this.selected.length === checkboxes.length;
+            },
+            toggleAll(event) {
+                const checkboxes = document.querySelectorAll('input[name="row-select"]');
+                if (event.target.checked) {
                     this.selected = Array.from(checkboxes).map(el => el.value);
                 } else {
                     this.selected = [];

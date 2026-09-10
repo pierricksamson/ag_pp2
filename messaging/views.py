@@ -213,8 +213,20 @@ def trash(request: HttpRequest) -> HttpResponse:
 def bulk_action(request: HttpRequest) -> HttpResponse:
     """Action groupée sur plusieurs messages."""
     action = request.POST.get("action")
-    message_ids = request.POST.getlist("message_ids")
-    messages = Message.objects.filter(id__in=message_ids, sender=request.user)
+    # Le navigateur envoie les identifiants sélectionnés sous forme d'une liste
+    # séparée par des virgules. Accepter également les valeurs répétées permet de
+    # garder cette vue compatible avec un formulaire HTML classique.
+    message_ids = []
+    for value in request.POST.getlist("message_ids"):
+        message_ids.extend(value.split(","))
+    messages = Message.objects.filter(
+        id__in=message_ids,
+        is_draft=False,
+    ).filter(
+        Q(to_recipients=request.user)
+        | Q(cc_recipients=request.user)
+        | Q(bcc_recipients=request.user)
+    ).distinct()
 
     if action == "delete":
         messages.update(deleted_at=timezone.now())
