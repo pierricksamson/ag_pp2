@@ -3,88 +3,176 @@
 {% block title %}Gestion des comptes{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <p class="text-sm font-semibold uppercase tracking-wide text-brand-600">Administration</p>
-    <h1 class="mt-1 text-3xl font-bold text-slate-900">Créer un compte</h1>
-    <p class="mt-2 text-slate-500">Créez la personne et ses rattachements en une seule étape.</p>
-</div>
+<div class="account-page" x-data="{ role: '{{ form.role.value|default:"STUDENT" }}', showCreate: {% if form.errors %}true{% else %}false{% endif %} }">
+    <header class="account-hero">
+        <div class="hero-icon"><i class="fa-solid fa-user-plus"></i></div>
+        <div>
+            <p class="eyebrow">Administration des accès</p>
+            <h1>Créer une personne</h1>
+            <p>Remplissez uniquement ce que vous savez. Les informations pourront être complétées plus tard.</p>
+        </div>
+        <button type="button" class="hero-button" @click="showCreate = !showCreate"><i class="fa-solid" :class="showCreate ? 'fa-xmark' : 'fa-plus'"></i> <span x-text="showCreate ? 'Fermer' : 'Nouveau compte'"></span></button>
+    </header>
 
-<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-<div class="card">
-    <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-user-plus"></i></div>
-        <div><h2 class="font-bold text-slate-900">Nouvelle personne</h2><p class="text-sm text-slate-500">Un mot de passe temporaire sera généré automatiquement.</p></div>
-    </div>
-    <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ role: '{{ form.role.value|default:"STUDENT" }}' }">
+    <form method="post" class="account-layout" x-show="showCreate" x-cloak>
         {% csrf_token %}
         <input type="hidden" name="action" value="create_account">
-        {% for field in form.visible_fields %}
-        {% if field.name not in 'class_group teacher_classes children' %}
-        <div{% if field.name == 'is_active' %} class="md:col-span-2 flex items-center gap-2"{% endif %}>
-            {% if field.name == 'is_active' %}{{ field }}{% endif %}
-            <label for="{{ field.id_for_label }}"{% if field.name == 'is_active' %} class="font-medium"{% endif %}>{{ field.label }}</label>
-            {% if field.name != 'is_active' %}{{ field }}{% endif %}
-            {% for error in field.errors %}<p class="text-rose-600 text-sm">{{ error }}</p>{% endfor %}
-        </div>
-        {% endif %}
-        {% endfor %}
-        <div class="md:col-span-2 border-t border-slate-100 pt-4" x-show="role === 'STUDENT'" x-cloak>
-            <label for="{{ form.class_group.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ form.class_group.label }}</label>
-            {{ form.class_group }}
-        </div>
-        <div class="md:col-span-2 border-t border-slate-100 pt-4" x-show="role === 'PARENT'" x-cloak>
-            <label for="{{ form.children.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ form.children.label }}</label>
-            {{ form.children }}
-        </div>
-        <div class="md:col-span-2 border-t border-slate-100 pt-4" x-show="role === 'TEACHER'" x-cloak>
-            <label for="{{ form.teacher_classes.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ form.teacher_classes.label }}</label>
-            {{ form.teacher_classes }}
-        </div>
-        {% if form.non_field_errors %}<div class="md:col-span-2 text-rose-600">{{ form.non_field_errors }}</div>{% endif %}
-        <div class="md:col-span-2"><button type="submit" class="btn">Créer le compte</button></div>
-    </form>
-</div>
+        <main class="account-form">
+            <section class="form-card">
+                <div class="section-heading"><span class="step-number">1</span><div><h2>Identité</h2><p>Les coordonnées ne sont pas obligatoires.</p></div></div>
+                <div class="field-grid">
+                    {% for field in form.visible_fields %}
+                    {% if field.name == 'first_name' or field.name == 'last_name' or field.name == 'email' or field.name == 'phone' %}
+                    <div class="field-wrap{% if field.name == 'email' or field.name == 'phone' %} optional-field{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                        {% if field.name == 'email' or field.name == 'phone' %}<small>Laissez vide si non connu</small>{% endif %}
+                        {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
 
-<aside class="card bg-slate-900 text-white h-fit">
-    <div class="flex items-center gap-2 text-amber-300"><i class="fa-solid fa-wand-magic-sparkles"></i><h2 class="font-bold">Création simplifiée</h2></div>
-    <ul class="mt-4 space-y-3 text-sm text-slate-300">
-        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Le profil adapté est créé automatiquement.</li>
-        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Les élèves peuvent être affectés à une classe.</li>
-        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Les parents peuvent être liés à plusieurs enfants.</li>
-        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Les professeurs peuvent suivre plusieurs classes.</li>
-    </ul>
-</aside>
+            <section class="form-card">
+                <div class="section-heading"><span class="step-number">2</span><div><h2>Profil</h2><p>Le rôle adapte automatiquement les options suivantes.</p></div></div>
+                <div class="field-wrap role-field"><label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>{{ form.role }}</div>
+                <label class="active-toggle">{{ form.is_active }}<span><strong>Compte actif</strong><small>La personne pourra se connecter immédiatement.</small></span></label>
+            </section>
+
+            <section class="form-card linking-card">
+                <div class="section-heading"><span class="step-number">3</span><div><h2>Rattachements</h2><p>Facultatif : vous pourrez les ajouter plus tard.</p></div></div>
+                <div class="link-panel" x-show="role === 'STUDENT'" x-cloak><i class="fa-solid fa-school"></i><div><label for="{{ form.class_group.id_for_label }}">{{ form.class_group.label }}</label>{{ form.class_group }}</div></div>
+                <div class="link-panel" x-show="role === 'PARENT'" x-cloak><i class="fa-solid fa-children"></i><div><label for="{{ form.children.id_for_label }}">{{ form.children.label }}</label>{{ form.children }}</div></div>
+                <div class="link-panel" x-show="role === 'TEACHER'" x-cloak><i class="fa-solid fa-chalkboard-user"></i><div><label for="{{ form.teacher_classes.id_for_label }}">{{ form.teacher_classes.label }}</label>{{ form.teacher_classes }}</div></div>
+            </section>
+            {% if form.non_field_errors %}<div class="field-error">{{ form.non_field_errors }}</div>{% endif %}
+            <button type="submit" class="create-button"><i class="fa-solid fa-wand-magic-sparkles"></i> Créer le compte</button>
+        </main>
+
+        <aside class="account-aside">
+            <div class="aside-card credential-card"><i class="fa-solid fa-key"></i><h2>Accès automatique</h2><p>Un mot de passe temporaire est généré à chaque nouvelle création.</p></div>
+            <div class="aside-card checklist-card"><h2>Tout est prêt</h2><div><i class="fa-solid fa-circle-check"></i> Profil adapté au rôle</div><div><i class="fa-solid fa-circle-check"></i> Liens avec classes ou enfants</div><div><i class="fa-solid fa-circle-check"></i> Coordonnées complétables plus tard</div></div>
+        </aside>
+    </form>
 </div>
 
 {% if can_edit_permissions %}
-<div class="card">
-    <h2>Autoriser la création de comptes</h2>
-    <p>Cochez les personnes et les groupes autorisés à créer d'autres comptes.</p>
-    <form method="post">
+<section class="permissions-section">
+    <div class="permissions-header">
+        <div class="section-heading"><span class="step-number"><i class="fa-solid fa-shield-halved"></i></span><div><p class="eyebrow dark-eyebrow">Contrôle des accès</p><h2>Permissions de création</h2><p>Choisissez qui peut créer de nouveaux comptes.</p></div></div>
+        <div class="permission-count"><i class="fa-solid fa-lock-open"></i> Réservé à l'administrateur</div>
+    </div>
+    <form method="post" class="permissions-form">
         {% csrf_token %}
         <input type="hidden" name="action" value="save_permissions">
-        <h3>Personnes</h3>
-        <div class="space-y-2">
+        <div class="permission-column">
+        <div class="column-title"><span><i class="fa-solid fa-user-check"></i> Personnes</span><small>{{ users|length }} personne{{ users|length|pluralize }}</small></div>
+        <div class="permission-list">
             {% for person in users %}
-            <label class="flex items-center gap-2">
+            <label class="permission-row">
                 <input type="checkbox" name="account_users" value="{{ person.pk }}"{% if account_permission in person.user_permissions.all %} checked{% endif %}>
-                <span>{{ person.get_full_name|default:person.email }} — {{ person.get_role_display }}</span>
+                <span class="permission-avatar"><i class="fa-solid fa-user"></i></span><span><strong>{{ person.get_full_name|default:person.email }}</strong><small>{{ person.get_role_display }}</small></span>
             </label>
             {% empty %}<p>Aucune autre personne n'est encore enregistrée.</p>{% endfor %}
         </div>
-        <h3 class="mt-5">Groupes</h3>
-        <div class="space-y-2">
+        </div>
+        <div class="permission-column" x-data="{ showGroupCreate: false }">
+        <div class="column-title"><span><i class="fa-solid fa-users-gear"></i> Groupes</span><button type="button" class="new-inline-button" @click="showGroupCreate = !showGroupCreate"><i class="fa-solid" :class="showGroupCreate ? 'fa-xmark' : 'fa-plus'"></i> <span x-text="showGroupCreate ? 'Fermer' : 'Nouveau groupe'"></span></button></div>
+        <div class="group-create-panel" x-show="showGroupCreate" x-cloak>
+            <div class="group-create-form">
+                <label for="group_name">Nom du groupe</label><div><input id="group_name" name="group_name" maxlength="150" placeholder="Ex. Équipe pédagogique"><button type="submit" name="action" value="create_group" title="Créer le groupe"><i class="fa-solid fa-check"></i></button></div>
+            </div>
+        </div>
+        <div class="permission-list">
             {% for group in groups %}
-            <label class="flex items-center gap-2">
+            <label class="permission-row">
                 <input type="checkbox" name="account_groups" value="{{ group.pk }}"{% if account_permission in group.permissions.all %} checked{% endif %}>
-                <span>{{ group.name }}</span>
+                <span class="permission-avatar group-avatar"><i class="fa-solid fa-users"></i></span><span><strong>{{ group.name }}</strong><small>Autoriser la création de comptes</small></span>
             </label>
             {% empty %}<p>Aucun groupe Django n'est encore créé.</p>{% endfor %}
         </div>
-        <button type="submit" class="btn mt-5">Enregistrer les autorisations</button>
+        </div>
+        <button type="submit" class="save-permissions-button"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les permissions</button>
     </form>
-</div>
+</section>
 {% endif %}
 {% endblock %}
 
-{% block extra_head %}<style>[x-cloak] { display: none !important; }</style>{% endblock %}
+{% block extra_head %}
+<style>
+    [x-cloak] { display: none !important; }
+    .account-page { max-width: 1120px; margin: 0 auto; }
+    .account-hero { display: flex; align-items: center; gap: 18px; padding: 28px 32px; border-radius: 22px; color: #fff; background: linear-gradient(120deg, #183b72, #2764ad 58%, #3c91b7); box-shadow: 0 18px 38px rgba(28, 71, 124, .18); }
+    .hero-icon { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; background: rgba(255,255,255,.16); font-size: 22px; }
+    .account-hero h1 { margin: 3px 0 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+    .account-hero p { margin: 5px 0 0; color: #dcecff; }
+    .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+    .hero-badge { margin-left: auto; padding: 9px 13px; border: 1px solid rgba(255,255,255,.24); border-radius: 999px; color: #e5f5ff; font-size: 12px; white-space: nowrap; }
+    .account-layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 22px; margin-top: 22px; align-items: start; }
+    .account-form { display: grid; gap: 16px; }
+    .form-card, .aside-card { border: 1px solid #e5eaf1; border-radius: 18px; background: #fff; box-shadow: 0 8px 22px rgba(32, 56, 85, .06); }
+    .form-card { padding: 24px; }
+    .section-heading { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 20px; }
+    .section-heading h2, .aside-card h2 { margin: 0; color: #17233b; font-size: 17px; font-weight: 800; }
+    .section-heading p, .aside-card p { margin: 3px 0 0; color: #718096; font-size: 13px; }
+    .step-number { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 10px; color: #1d5b9e; background: #e6f1ff; font-weight: 800; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .field-wrap { display: grid; gap: 6px; }
+    .field-wrap label, .link-panel label { color: #34425b; font-size: 13px; font-weight: 700; }
+    .field-wrap input, .field-wrap select, .link-panel select { width: 100%; min-height: 43px; padding: 9px 12px; border: 1px solid #dbe3ed; border-radius: 10px; color: #1f2e46; background: #fbfcfe; }
+    .field-wrap input:focus, .field-wrap select:focus, .link-panel select:focus { border-color: #4a92d0; box-shadow: 0 0 0 3px #e4f1fb; }
+    .field-wrap small, .active-toggle small { color: #8a98aa; font-size: 11px; }
+    .role-field { max-width: 420px; }
+    .active-toggle { display: flex; align-items: center; gap: 10px; margin-top: 18px; color: #34425b; }
+    .active-toggle input { width: 18px; height: 18px; accent-color: #286baa; }
+    .active-toggle span { display: grid; gap: 2px; }
+    .link-panel { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border: 1px solid #dcebf7; border-radius: 13px; background: #f7fbff; }
+    .link-panel > i { margin-top: 3px; color: #2677b4; font-size: 18px; }
+    .link-panel > div { display: grid; gap: 7px; flex: 1; }
+    .create-button { min-height: 50px; border: 0; border-radius: 12px; color: #fff; background: #1769a6; box-shadow: 0 9px 18px rgba(23, 105, 166, .2); font-size: 14px; font-weight: 800; cursor: pointer; }
+    .create-button:hover { background: #125887; }
+    .account-aside { display: grid; gap: 14px; }
+    .aside-card { padding: 20px; }
+    .credential-card { color: #fff; border: 0; background: #172d4d; }
+    .credential-card > i { display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: 15px; border-radius: 10px; color: #ffd875; background: rgba(255,216,117,.13); }
+    .credential-card h2 { color: #fff; }
+    .credential-card p { color: #c2d1e4; line-height: 1.6; }
+    .checklist-card { display: grid; gap: 13px; color: #53647b; font-size: 13px; }
+    .checklist-card h2 { margin-bottom: 3px; }
+    .checklist-card i { margin-right: 8px; color: #2aaa7d; }
+    .field-error { color: #c53e52; font-size: 12px; }
+    .hero-button { margin-left: auto; min-height: 42px; padding: 0 16px; border: 1px solid rgba(255,255,255,.28); border-radius: 11px; color: #fff; background: rgba(255,255,255,.13); font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .hero-button:hover { background: rgba(255,255,255,.22); }
+    .permissions-section { margin-top: 24px; padding: 24px; border: 1px solid #e5eaf1; border-radius: 18px; background: #fff; box-shadow: 0 8px 22px rgba(32, 56, 85, .06); }
+    .permissions-header { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px solid #edf1f5; }
+    .permissions-header .section-heading { margin-bottom: 0; }
+    .dark-eyebrow { margin: 0 0 3px; color: #2871ad; }
+    .permission-count { padding: 8px 11px; border-radius: 9px; color: #597088; background: #f3f7fb; font-size: 11px; white-space: nowrap; }
+    .permissions-form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding-top: 22px; }
+    .permission-column { min-width: 0; }
+    .column-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; color: #243653; font-size: 14px; font-weight: 800; }
+    .column-title i { margin-right: 6px; color: #337bb2; }
+    .column-title small { color: #8a98aa; font-size: 11px; font-weight: 600; }
+    .permission-list { display: grid; gap: 7px; }
+    .permission-row { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #e7edf3; border-radius: 11px; cursor: pointer; }
+    .permission-row:hover { border-color: #bad8ee; background: #f8fbfe; }
+    .permission-row input { width: 17px; height: 17px; accent-color: #2875ae; }
+    .permission-row > span:last-child { display: grid; gap: 2px; min-width: 0; }
+    .permission-row strong { overflow: hidden; color: #293b56; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .permission-row small { color: #8795a7; font-size: 11px; }
+    .permission-avatar { display: grid; place-items: center; flex: 0 0 30px; width: 30px; height: 30px; border-radius: 9px; color: #337bb2; background: #eaf4fc; font-size: 12px; }
+    .group-avatar { color: #916f27; background: #fff6dc; }
+    .new-inline-button { padding: 6px 9px; border: 1px solid #d6e5f1; border-radius: 8px; color: #246b9f; background: #f6fbff; font-size: 11px; font-weight: 800; cursor: pointer; }
+    .new-inline-button:hover { background: #e9f4fc; }
+    .group-create-panel { margin-bottom: 10px; padding: 12px; border: 1px dashed #b8d5e9; border-radius: 11px; background: #f7fbfe; }
+    .group-create-form { display: grid; gap: 6px; }
+    .group-create-form label { color: #425671; font-size: 11px; font-weight: 800; }
+    .group-create-form > div { display: flex; gap: 6px; }
+    .group-create-form input { min-width: 0; flex: 1; padding: 8px 10px; border: 1px solid #d5e3ee; border-radius: 8px; background: #fff; }
+    .group-create-form button { width: 34px; border: 0; border-radius: 8px; color: #fff; background: #2784b6; cursor: pointer; }
+    .save-permissions-button { grid-column: 1 / -1; min-height: 44px; border: 0; border-radius: 10px; color: #fff; background: #172d4d; font-weight: 800; cursor: pointer; }
+    .save-permissions-button:hover { background: #21466f; }
+    @media (max-width: 800px) { .account-layout { grid-template-columns: 1fr; } .account-aside { grid-row: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); } .permissions-form { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .account-hero { padding: 22px; align-items: flex-start; flex-wrap: wrap; } .hero-button { margin-left: 0; } .account-hero h1 { font-size: 25px; } .form-card, .permissions-section { padding: 18px; } .field-grid, .account-aside { grid-template-columns: 1fr; } .permissions-header { display: block; } .permission-count { display: inline-block; margin-top: 10px; } }
+</style>
+{% endblock %}

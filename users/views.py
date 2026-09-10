@@ -207,7 +207,11 @@ def account_management(request: HttpRequest) -> HttpResponse:
                     elif user.role == Role.TEACHER:
                         profile = TeacherProfile.objects.create(user=user)
                         profile.class_groups.set(form.cleaned_data.get("teacher_classes", []))
-                messages.success(request, f"Compte créé pour {user.get_full_name()}. Mot de passe temporaire : {form.generated_password}")
+                messages.success(
+                    request,
+                    f"Compte créé pour {user.get_full_name()}. Identifiant : {form.generated_email}. "
+                    f"Mot de passe temporaire : {form.generated_password}",
+                )
                 return redirect("users:account_management")
         elif action == "save_permissions" and request.user.is_superuser:
             allowed_user_ids = {int(value) for value in request.POST.getlist("account_users") if value.isdigit()}
@@ -223,6 +227,16 @@ def account_management(request: HttpRequest) -> HttpResponse:
                 else:
                     group.permissions.remove(account_permission)
             messages.success(request, "Les autorisations de création ont été mises à jour.")
+            return redirect("users:account_management")
+        elif action == "create_group" and request.user.is_superuser:
+            group_name = request.POST.get("group_name", "").strip()
+            if not group_name:
+                messages.error(request, "Le nom du groupe est obligatoire.")
+            elif Group.objects.filter(name__iexact=group_name).exists():
+                messages.error(request, "Ce groupe existe déjà.")
+            else:
+                Group.objects.create(name=group_name)
+                messages.success(request, f"Le groupe « {group_name} » a été créé.")
             return redirect("users:account_management")
         else:
             form = AccountCreationForm()

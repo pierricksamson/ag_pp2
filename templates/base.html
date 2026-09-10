@@ -160,6 +160,14 @@
               <a href="{% url 'users:dashboard_admin' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
               </a>
+              {% if user.is_superuser %}
+              <a href="{% url 'users:account_management' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'account_management' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-user-plus mr-1.5"></i>Comptes
+              </a>
+              <a href="{% url 'academics:establishment_management' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'establishment_management' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-school mr-1.5"></i>Établissement
+              </a>
+              {% endif %}
               <a href="{% url 'schedule:weekly' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'schedule' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-calendar-week mr-1.5"></i>Emploi du temps
               </a>

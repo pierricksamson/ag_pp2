@@ -14,13 +14,17 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 
+from schedule.models import Room
 from users.models import Role, StudentProfile, TeacherProfile
 
 from .models import (
+    AcademicYear,
     ClassGroup,
     Evaluation,
     Grade,
+    Level,
     Subject,
     Term,
 )
@@ -30,6 +34,84 @@ from .services import (
     subject_average,
     weighted_average,
 )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def establishment_management(request: HttpRequest) -> HttpResponse:
+    """Centralise la création des référentiels utilisés par l'établissement."""
+    if not request.user.is_admin:
+        raise PermissionDenied
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        try:
+            if action == "create_year":
+                label = request.POST.get("label", "").strip()
+                start_date = date.fromisoformat(request.POST.get("start_date", ""))
+                end_date = date.fromisoformat(request.POST.get("end_date", ""))
+                if not label or end_date <= start_date:
+                    raise ValueError
+                if AcademicYear.objects.filter(label=label).exists():
+                    messages.error(request, "Cette année scolaire existe déjà.")
+                else:
+                    AcademicYear.objects.create(label=label, start_date=start_date, end_date=end_date, is_current="is_current" in request.POST)
+                    if "is_current" in request.POST:
+                        AcademicYear.objects.exclude(label=label).update(is_current=False)
+                    messages.success(request, "Année scolaire créée.")
+            elif action == "create_level":
+                name = request.POST.get("name", "").strip()
+                if not name:
+                    raise ValueError
+                if Level.objects.filter(name__iexact=name).exists():
+                    messages.error(request, "Ce niveau existe déjà.")
+                else:
+                    Level.objects.create(name=name, order=int(request.POST.get("order") or 0))
+                    messages.success(request, "Niveau créé.")
+            elif action == "create_subject":
+                code = request.POST.get("code", "").strip().upper()
+                name = request.POST.get("name", "").strip()
+                level_id = request.POST.get("level")
+                if not code or not name or not level_id:
+                    raise ValueError
+                if Subject.objects.filter(code=code).exists():
+                    messages.error(request, "Ce code matière existe déjà.")
+                else:
+                    Subject.objects.create(code=code, name=name, level_id=level_id)
+                    messages.success(request, "Matière créée.")
+            elif action == "create_class":
+                name = request.POST.get("name", "").strip()
+                level_id = request.POST.get("level")
+                year_id = request.POST.get("academic_year")
+                if not name or not level_id or not year_id:
+                    raise ValueError
+                if ClassGroup.objects.filter(name=name, level_id=level_id, academic_year_id=year_id).exists():
+                    messages.error(request, "Cette classe existe déjà pour cette année.")
+                else:
+                    ClassGroup.objects.create(name=name, level_id=level_id, academic_year_id=year_id)
+                    messages.success(request, "Classe créée.")
+            elif action == "create_room":
+                name = request.POST.get("name", "").strip()
+                if not name:
+                    raise ValueError
+                if Room.objects.filter(name__iexact=name).exists():
+                    messages.error(request, "Cette salle existe déjà.")
+                else:
+                    Room.objects.create(name=name, capacity=int(request.POST.get("capacity") or 30), location=request.POST.get("location", "").strip())
+                    messages.success(request, "Salle créée.")
+            else:
+                messages.error(request, "Action inconnue.")
+        except (TypeError, ValueError):
+            messages.error(request, "Vérifiez les informations saisies.")
+        return redirect("academics:establishment_management")
+
+    return render(request, "academics/establishment_management.html", {
+        "years": AcademicYear.objects.all(),
+        "levels": Level.objects.all(),
+        "subjects": Subject.objects.select_related("level"),
+        "class_groups": ClassGroup.objects.select_related("level", "academic_year"),
+        "rooms": Room.objects.all(),
+    })
 
 
 # ---------- Prof : création d'évaluation ----------

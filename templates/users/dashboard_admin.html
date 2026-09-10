@@ -29,7 +29,10 @@
 <div class="card">
     <h2>Administration</h2>
     <p>Créez les comptes de l'établissement et choisissez qui peut ensuite créer des comptes.</p>
+    {% if user.is_superuser %}
     <a href="{% url 'users:account_management' %}" class="btn">Gérer les comptes</a>
+    <a href="{% url 'academics:establishment_management' %}" class="btn">Gérer l'établissement</a>
+    {% endif %}
     <p class="mt-3">Pour les réglages techniques avancés, utilisez la console Django.</p>
     <a href="{{ admin_url }}" class="btn">Ouvrir la console admin</a>
 </div>

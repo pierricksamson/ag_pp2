@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.crypto import get_random_string
+from uuid import uuid4
 
 from academics.models import ClassGroup
 
@@ -27,6 +28,10 @@ class AccountCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["email"].required = False
+        self.fields["phone"].required = False
+        self.fields["email"].label = "Email (facultatif)"
+        self.fields["phone"].label = "Téléphone (facultatif)"
         self.fields["role"].widget.attrs["x-model"] = "role"
         classes = ClassGroup.objects.select_related("level", "academic_year").order_by("level__order", "name")
         self.fields["class_group"].queryset = classes
@@ -41,6 +46,9 @@ class AccountCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        if not user.email:
+            user.email = f"compte-{uuid4().hex[:12]}@interne.ademi"
+        self.generated_email = user.email
         password = self.cleaned_data.get("password1") or get_random_string(14)
         user.set_password(password)
         self.generated_password = password

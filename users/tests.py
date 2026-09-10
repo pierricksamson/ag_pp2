@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group
 from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -63,6 +64,18 @@ class AccountManagementTests(TestCase):
 		self.assertEqual(student.student_profile.class_group, class_group)
 		self.assertTrue(student.student_profile.student_number.startswith("ELEVE-"))
 
+	def test_account_can_be_created_without_email_or_phone(self):
+		self.client.force_login(self.owner)
+		response = self.client.post(reverse("users:account_management"), {
+			"action": "create_account", "first_name": "Sans", "last_name": "Coordonnees",
+			"role": Role.NURSE, "is_active": "on",
+		})
+
+		self.assertRedirects(response, reverse("users:account_management"))
+		account = User.objects.get(first_name="Sans")
+		self.assertTrue(account.email.endswith("@interne.ademi"))
+		self.assertEqual(account.phone, "")
+
 	def test_owner_can_delegate_creation_to_person(self):
 		permission = Permission.objects.get(
 			content_type__app_label="users",
@@ -78,6 +91,15 @@ class AccountManagementTests(TestCase):
 		self.person.refresh_from_db()
 		self.assertTrue(self.person.has_perm("users.can_create_accounts"))
 		self.assertIn(permission, self.person.user_permissions.all())
+
+	def test_owner_can_create_a_group(self):
+		self.client.force_login(self.owner)
+		response = self.client.post(reverse("users:account_management"), {
+			"action": "create_group", "group_name": "Équipe pédagogique",
+		})
+
+		self.assertRedirects(response, reverse("users:account_management"))
+		self.assertTrue(Group.objects.filter(name="Équipe pédagogique").exists())
 
 	def test_unauthorized_person_cannot_create_account(self):
 		self.client.force_login(self.person)
