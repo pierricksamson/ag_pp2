@@ -3,23 +3,57 @@
 {% block title %}Gestion des comptes{% endblock %}
 
 {% block content %}
+<div class="mb-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-brand-600">Administration</p>
+    <h1 class="mt-1 text-3xl font-bold text-slate-900">Créer un compte</h1>
+    <p class="mt-2 text-slate-500">Créez la personne et ses rattachements en une seule étape.</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
 <div class="card">
-    <h1>Créer un compte</h1>
-    <p>Le compte est créé immédiatement avec la fonction et le mot de passe choisis.</p>
-    <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-user-plus"></i></div>
+        <div><h2 class="font-bold text-slate-900">Nouvelle personne</h2><p class="text-sm text-slate-500">Un mot de passe temporaire sera généré automatiquement.</p></div>
+    </div>
+    <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4" x-data="{ role: '{{ form.role.value|default:"STUDENT" }}' }">
         {% csrf_token %}
         <input type="hidden" name="action" value="create_account">
-        {% for field in form %}
+        {% for field in form.visible_fields %}
+        {% if field.name not in 'class_group teacher_classes children' %}
         <div{% if field.name == 'is_active' %} class="md:col-span-2 flex items-center gap-2"{% endif %}>
             {% if field.name == 'is_active' %}{{ field }}{% endif %}
             <label for="{{ field.id_for_label }}"{% if field.name == 'is_active' %} class="font-medium"{% endif %}>{{ field.label }}</label>
             {% if field.name != 'is_active' %}{{ field }}{% endif %}
             {% for error in field.errors %}<p class="text-rose-600 text-sm">{{ error }}</p>{% endfor %}
         </div>
+        {% endif %}
         {% endfor %}
+        <div class="md:col-span-2 border-t border-slate-100 pt-4" x-show="role === 'STUDENT'" x-cloak>
+            <label for="{{ form.class_group.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ form.class_group.label }}</label>
+            {{ form.class_group }}
+        </div>
+        <div class="md:col-span-2 border-t border-slate-100 pt-4" x-show="role === 'PARENT'" x-cloak>
+            <label for="{{ form.children.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ form.children.label }}</label>
+            {{ form.children }}
+        </div>
+        <div class="md:col-span-2 border-t border-slate-100 pt-4" x-show="role === 'TEACHER'" x-cloak>
+            <label for="{{ form.teacher_classes.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-1">{{ form.teacher_classes.label }}</label>
+            {{ form.teacher_classes }}
+        </div>
         {% if form.non_field_errors %}<div class="md:col-span-2 text-rose-600">{{ form.non_field_errors }}</div>{% endif %}
         <div class="md:col-span-2"><button type="submit" class="btn">Créer le compte</button></div>
     </form>
+</div>
+
+<aside class="card bg-slate-900 text-white h-fit">
+    <div class="flex items-center gap-2 text-amber-300"><i class="fa-solid fa-wand-magic-sparkles"></i><h2 class="font-bold">Création simplifiée</h2></div>
+    <ul class="mt-4 space-y-3 text-sm text-slate-300">
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Le profil adapté est créé automatiquement.</li>
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Les élèves peuvent être affectés à une classe.</li>
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Les parents peuvent être liés à plusieurs enfants.</li>
+        <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Les professeurs peuvent suivre plusieurs classes.</li>
+    </ul>
+</aside>
 </div>
 
 {% if can_edit_permissions %}
@@ -52,3 +86,5 @@
 </div>
 {% endif %}
 {% endblock %}
+
+{% block extra_head %}<style>[x-cloak] { display: none !important; }</style>{% endblock %}

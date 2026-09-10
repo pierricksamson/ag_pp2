@@ -176,6 +176,12 @@ class TeacherProfile(models.Model):
         blank=True,
         verbose_name=_("matières enseignées"),
     )
+    class_groups = models.ManyToManyField(
+        "academics.ClassGroup",
+        related_name="teachers",
+        blank=True,
+        verbose_name=_("classes suivies"),
+    )
     hire_date = models.DateField(_("date d'embauche"), null=True, blank=True)
 
     class Meta:

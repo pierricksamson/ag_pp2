@@ -4,13 +4,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView as DjangoLoginView
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from .forms import AccountCreationForm
-from .models import Role, User
+from .models import ParentProfile, Role, StudentProfile, TeacherProfile, User
 
 
 def _can_manage_accounts(user) -> bool:
@@ -196,8 +197,17 @@ def account_management(request: HttpRequest) -> HttpResponse:
         if action == "create_account":
             form = AccountCreationForm(request.POST)
             if form.is_valid():
-                form.save()
-                messages.success(request, "Le compte a été créé.")
+                with transaction.atomic():
+                    user = form.save()
+                    if user.role == Role.STUDENT:
+                        StudentProfile.objects.create(user=user, student_number=f"ELEVE-{user.pk:05d}", class_group=form.cleaned_data.get("class_group"))
+                    elif user.role == Role.PARENT:
+                        profile = ParentProfile.objects.create(user=user)
+                        profile.children.set(form.cleaned_data.get("children", []))
+                    elif user.role == Role.TEACHER:
+                        profile = TeacherProfile.objects.create(user=user)
+                        profile.class_groups.set(form.cleaned_data.get("teacher_classes", []))
+                messages.success(request, f"Compte créé pour {user.get_full_name()}. Mot de passe temporaire : {form.generated_password}")
                 return redirect("users:account_management")
         elif action == "save_permissions" and request.user.is_superuser:
             allowed_user_ids = {int(value) for value in request.POST.getlist("account_users") if value.isdigit()}
