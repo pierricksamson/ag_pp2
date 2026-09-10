@@ -20,6 +20,7 @@ from academics.models import (
     Subject,
     Term,
 )
+from messaging.models import Conversation, ConversationKind, Message
 from schedule.models import CourseSession, Room
 from users.models import (
     AdminProfile,
@@ -160,6 +161,9 @@ class Command(BaseCommand):
         student1.parents.add(parent_profile)
         self._log("PARENT", parent_user.email)
 
+        # --- Mails de demonstration pour Admin Root
+        self._create_demo_mailbox(admin, prof1, prof2, parent_user)
+
         # --- Salles de l'emploi du temps
         rooms = self._create_rooms()
 
@@ -170,6 +174,37 @@ class Command(BaseCommand):
         self._create_evaluations_and_grades(subjects, class_group, term, [prof1_profile, prof2_profile], [student1, student2])
 
         self._print_summary(schedule_count)
+
+    def _create_demo_mailbox(self, admin, prof1, prof2, parent):
+        """Prépare une boîte de réception utile dès la première connexion."""
+        incoming = [
+            (prof1, "Réunion pédagogique", "Bonjour Admin Root, peut-on prévoir la réunion pédagogique jeudi à 16h ?"),
+            (prof2, "Besoin d'une salle", "Bonjour, la salle A202 serait-elle disponible pour le prochain devoir ?"),
+            (parent, "Question concernant Lucas", "Bonjour, pouvez-vous me confirmer la date du prochain conseil de classe ?"),
+        ]
+        for sender, subject, body in incoming:
+            conversation = Conversation.objects.create(kind=ConversationKind.MAIL, subject=subject)
+            conversation.participants.set([sender, admin])
+            message = Message.objects.create(
+                conversation=conversation,
+                sender=sender,
+                subject=subject,
+                body=body,
+            )
+            message.to_recipients.add(admin)
+
+        conversation = Conversation.objects.create(
+            kind=ConversationKind.MAIL,
+            subject="Rappel de rentrée",
+        )
+        conversation.participants.set([admin, prof1])
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=admin,
+            subject="Rappel de rentrée",
+            body="Merci de vérifier les classes et les emplois du temps avant la rentrée.",
+        )
+        message.to_recipients.add(prof1)
 
     # ---------- evaluations + notes ----------
     def _create_evaluations_and_grades(self, subjects, class_group, term, teachers, students):
@@ -331,6 +366,8 @@ class Command(BaseCommand):
     def _reset_users(self):
         from academics.models import Grade
         Grade.objects.all().delete()
+        Message.objects.all().delete()
+        Conversation.objects.all().delete()
         AdminProfile.objects.all().delete()
         StudentProfile.objects.all().delete()
         ParentProfile.objects.all().delete()
