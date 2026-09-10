@@ -77,6 +77,62 @@ def _mail_conversations(user: User) -> list[dict]:
     return rows
 
 
+def _sent_conversations(user: User) -> list[dict]:
+    """Retourne les conversations MAIL dont le dernier message non supprimé a été envoyé par l'utilisateur."""
+    conversations = (
+        Conversation.objects.filter(
+            kind=ConversationKind.MAIL,
+            messages__deleted_at__isnull=True,
+            messages__is_draft=False,
+            messages__sender=user,
+        )
+        .prefetch_related("participants", "messages")
+        .distinct()
+    )
+    rows = []
+    for c in conversations:
+        last = c.messages.filter(deleted_at__isnull=True, is_draft=False).last()
+        others = c.participants.exclude(id=user.id)
+        rows.append({
+            "conversation": c,
+            "others": others,
+            "last_message": last,
+            "unread": 0,
+        })
+    rows.sort(key=lambda r: r["last_message"].sent_at if r["last_message"] else r["conversation"].created_at, reverse=True)
+    return rows
+
+
+def _draft_conversations(user: User) -> list[dict]:
+    """Retourne les conversations MAIL contenant un brouillon de l'utilisateur."""
+    conversations = (
+        Conversation.objects.filter(
+            kind=ConversationKind.MAIL,
+            messages__sender=user,
+            messages__is_draft=True,
+            messages__deleted_at__isnull=True,
+        )
+        .prefetch_related("participants", "messages")
+        .distinct()
+    )
+    rows = []
+    for c in conversations:
+        last = c.messages.filter(
+            sender=user,
+            is_draft=True,
+            deleted_at__isnull=True,
+        ).last()
+        others = c.participants.exclude(id=user.id)
+        rows.append({
+            "conversation": c,
+            "others": others,
+            "last_message": last,
+            "unread": 0,
+        })
+    rows.sort(key=lambda r: r["last_message"].sent_at if r["last_message"] else r["conversation"].created_at, reverse=True)
+    return rows
+
+
 @login_required
 def inbox(request: HttpRequest) -> HttpResponse:
     rows = _mail_conversations(request.user)
@@ -100,36 +156,26 @@ def inbox(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def sent(request: HttpRequest) -> HttpResponse:
-    """Afficher les messages envoyés par l'utilisateur."""
-    sent_messages = (
-        Message.objects.filter(sender=request.user, is_draft=False, deleted_at__isnull=True)
-        .select_related("conversation")
-        .prefetch_related("to_recipients", "cc_recipients")
-        .order_by("-sent_at")
-    )
+    """Afficher les conversations dont le dernier message a été envoyé par l'utilisateur."""
+    rows = _sent_conversations(request.user)
     draft_count = Message.objects.filter(
         sender=request.user,
         is_draft=True,
         deleted_at__isnull=True,
     ).count()
     return render(request, "messaging/sent.html", {
-        "sent_messages": sent_messages,
+        "rows": rows,
         "draft_count": draft_count,
     })
 
 
 @login_required
 def drafts(request: HttpRequest) -> HttpResponse:
-    """Afficher MES brouillons (non envoyés)."""
-    drafts = (
-        Message.objects.filter(sender=request.user, is_draft=True, deleted_at__isnull=True)
-        .select_related("sender", "conversation")
-        .prefetch_related("to_recipients")
-        .order_by("-sent_at")
-    )
-    draft_count = drafts.count()
+    """Afficher les brouillons de l'utilisateur."""
+    rows = _draft_conversations(request.user)
+    draft_count = len(rows)
     return render(request, "messaging/drafts.html", {
-        "drafts": drafts,
+        "rows": rows,
         "draft_count": draft_count,
     })
 

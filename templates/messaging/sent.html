@@ -49,26 +49,28 @@
             </h1>
 
             <div class="bg-white rounded-2xl card-shadow overflow-hidden divide-y divide-slate-100">
-                {% for message in sent_messages %}
-                    <a href="{% url 'messaging:conversation_detail' message.conversation.id %}" class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition">
+                {% for row in rows %}
+                    <a href="{% url 'messaging:conversation_detail' row.conversation.id %}" class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition">
                         <div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold shrink-0">
                             <i class="fa-solid fa-paper-plane"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
                                 <span class="font-semibold text-sm truncate">
-                                    {% for u in message.to_recipients.all %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                    {% for u in row.others %}{{ u.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
                                 </span>
-                                {% if message.subject %}
-                                    <span class="text-sm font-medium text-slate-700 truncate">— {{ message.subject }}</span>
+                                {% if row.conversation.subject %}
+                                    <span class="text-sm font-medium text-slate-700 truncate">— {{ row.conversation.subject }}</span>
                                 {% endif %}
                             </div>
                             <p class="text-sm text-slate-500 truncate">
-                                {{ message.body|truncatechars:200 }}
+                                {% if row.last_message %}{{ row.last_message.body|truncatechars:200 }}{% else %}Aucun message.{% endif %}
                             </p>
                         </div>
                         <div class="text-right shrink-0">
-                            <div class="text-xs text-slate-400">{{ message.sent_at|date:"d/m H:i" }}</div>
+                            {% if row.last_message %}
+                                <div class="text-xs text-slate-400">{{ row.last_message.sent_at|date:"d/m H:i" }}</div>
+                            {% endif %}
                         </div>
                     </a>
                 {% empty %}
