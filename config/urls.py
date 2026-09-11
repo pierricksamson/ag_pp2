@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
@@ -12,4 +14,8 @@ urlpatterns = [
     path("attendance/", include("attendance.urls", namespace="attendance")),
     path("vie-scolaire/", include("vie_scolaire.urls", namespace="vie_scolaire")),
     path("messaging/", include("messaging.urls", namespace="messaging")),
+    path("drive/", include("drive.urls", namespace="drive")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

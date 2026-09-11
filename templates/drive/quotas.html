@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Quotas Drive{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'users:dashboard_admin' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour au tableau de bord
+        </a>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-hard-drive"></i></span>
+            Quotas du Drive
+        </h1>
+        <p class="text-slate-500 text-sm mt-1">Définissez l'espace de stockage (en Mo) autorisé pour chaque rôle.</p>
+    </div>
+
+    <form method="post" class="bg-white rounded-2xl card-shadow p-6 sm:p-8 space-y-4">
+        {% csrf_token %}
+        {% for row in rows %}
+            <div class="flex items-center justify-between gap-4 py-2 border-b border-slate-100 last:border-b-0">
+                <div>
+                    <span class="font-medium text-slate-800">{{ row.label }}</span>
+                    {% if row.is_default %}<span class="ml-2 text-xs text-slate-400">(valeur par défaut)</span>{% endif %}
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="number" min="1" name="quota_{{ row.role }}" value="{{ row.max_mb }}"
+                           class="w-24 px-3 py-1.5 border border-slate-300 rounded-lg text-right focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                    <span class="text-sm text-slate-500">Mo</span>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="flex justify-end pt-4">
+            <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+                <i class="fa-solid fa-check"></i> Enregistrer les quotas
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

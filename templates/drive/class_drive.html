@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Drive — {{ class_group }}{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <a href="{% url 'drive:personal' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à mon Drive
+        </a>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+            <i class="fa-solid fa-users-rectangle text-brand-600"></i>
+            Drive — {{ class_group }}
+        </h1>
+    </div>
+    {% if classes|length > 1 %}
+        <div class="flex flex-wrap gap-2">
+            {% for c in classes %}
+                <a href="{% url 'drive:class_drive' c.id %}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium {% if c.id == class_group.id %}bg-brand-600 text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                    {{ c }}
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="bg-white rounded-2xl card-shadow p-5 mb-6">
+    <div class="flex items-center justify-between text-sm mb-2">
+        <span class="font-semibold text-slate-700">Votre espace personnel utilisé</span>
+        <span class="text-slate-500">{{ usage_mb }} Mo / {{ quota_mb }} Mo</span>
+    </div>
+    <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full {% if usage_pct >= 90 %}bg-rose-500{% elif usage_pct >= 70 %}bg-amber-500{% else %}bg-brand-500{% endif %}" style="width: {{ usage_pct }}%;"></div>
+    </div>
+    <p class="text-xs text-slate-400 mt-2">Les fichiers déposés ici comptent dans votre propre quota.</p>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="bg-white rounded-2xl card-shadow p-5 mb-6 flex flex-wrap items-center gap-3">
+    {% csrf_token %}
+    <input type="file" name="file" accept="application/pdf,.pdf" required class="text-sm">
+    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
+        <i class="fa-solid fa-upload"></i> Envoyer un PDF
+    </button>
+    <span class="text-xs text-slate-400">Fichiers PDF uniquement.</span>
+</form>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+                <th class="text-left px-6 py-3">Fichier</th>
+                <th class="text-left px-6 py-3">Déposé par</th>
+                <th class="text-left px-6 py-3">Taille</th>
+                <th class="text-left px-6 py-3">Déposé le</th>
+                <th class="text-right px-6 py-3">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for f in files %}
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-3">
+                        <a href="{{ f.file.url }}" target="_blank" class="text-brand-600 hover:underline font-medium">
+                            <i class="fa-solid fa-file-pdf text-rose-500 mr-1.5"></i>{{ f.original_name }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-3 text-slate-600">{{ f.owner.get_full_name }}</td>
+                    <td class="px-6 py-3 text-slate-600">{{ f.size_mb }} Mo</td>
+                    <td class="px-6 py-3 text-slate-600">{{ f.uploaded_at|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-3 text-right">
+                        {% if f.owner_id == request.user.id or can_moderate %}
+                            <form method="post" action="{% url 'drive:delete_file' f.id %}" onsubmit="return confirm('Supprimer ce fichier ?');">
+                                {% csrf_token %}
+                                <button type="submit" class="text-xs text-rose-600 hover:underline">
+                                    <i class="fa-solid fa-trash mr-1"></i>Supprimer
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="text-xs text-slate-300">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                    <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-3 block"></i>
+                    Aucun fichier pour le moment.
+                </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

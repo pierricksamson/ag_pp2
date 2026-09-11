@@ -107,6 +107,9 @@
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
+              <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+              </a>
               <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-comments mr-1.5"></i>Chat
               </a>
@@ -132,6 +135,9 @@
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
+              <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+              </a>
             {% elif user.is_parent %}
               <a href="{% url 'users:dashboard_parent' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_parent' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
@@ -156,6 +162,9 @@
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
+              <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+              </a>
             {% elif user.is_admin %}
               <a href="{% url 'users:dashboard_admin' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
@@ -166,6 +175,9 @@
               </a>
               <a href="{% url 'academics:establishment_management' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'establishment_management' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-school mr-1.5"></i>Établissement
+              </a>
+              <a href="{% url 'drive:quota_settings' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'quota_settings' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-hard-drive mr-1.5"></i>Quotas Drive
               </a>
               {% endif %}
               <a href="{% url 'schedule:weekly' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'schedule' %}text-brand-600 border-brand-500{% endif %}">
@@ -180,6 +192,9 @@
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
                 <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
+              </a>
+              <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
+                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
               </a>
               <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
                 <i class="fa-solid fa-comments mr-1.5"></i>Chat
