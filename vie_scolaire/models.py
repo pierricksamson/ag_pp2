@@ -21,6 +21,69 @@ class RetardStatus(models.TextChoices):
     UNJUSTIFIED = "UNJUSTIFIED", _("Non justifié")
 
 
+
+class RetardSource(models.TextChoices):
+    MANUEL = "MANUEL", _("Déclaré manuellement")
+    APPEL = "APPEL", _("Généré depuis l'appel")
+
+
+class ObservationType(models.TextChoices):
+    ENCOURAGEMENT = "ENCOURAGEMENT", _("Encouragement")
+    AVERTISSEMENT_TRAVAIL = "AVERTISSEMENT_TRAVAIL", _("Avertissement travail")
+    AVERTISSEMENT_CONDUITE = "AVERTISSEMENT_CONDUITE", _("Avertissement conduite")
+    PUNITION = "PUNITION", _("Punition")
+    SANCTION = "SANCTION", _("Sanction")
+    NOTE = "NOTE", _("Observation / note libre")
+
+
+class Observation(models.Model):
+    """Une observation façon Pronote : encouragement, avertissement, punition, sanction, ou note libre."""
+
+    student = models.ForeignKey(
+        "users.StudentProfile",
+        on_delete=models.CASCADE,
+        related_name="observations",
+        verbose_name=_("Élève"),
+    )
+    type = models.CharField(
+        max_length=30,
+        choices=ObservationType.choices,
+        default=ObservationType.NOTE,
+        verbose_name=_("Type"),
+        db_index=True,
+    )
+    subject = models.ForeignKey(
+        "academics.Subject",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="observations",
+        verbose_name=_("Matière concernée"),
+    )
+    title = models.CharField(_("Titre"), max_length=120, blank=True)
+    description = models.TextField(_("Description"), max_length=1000, blank=True)
+    author = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="observations_written",
+        verbose_name=_("Rédigé par"),
+    )
+    created_at = models.DateTimeField(_("Créée le"), auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = _("Observation")
+        verbose_name_plural = _("Observations")
+
+    def __str__(self) -> str:
+        return f"{self.get_type_display()} — {self.student} ({self.created_at:%d/%m/%Y})"
+
+    @property
+    def is_positive(self) -> bool:
+        return self.type == ObservationType.ENCOURAGEMENT
+
 class Retard(models.Model):
     """Un retard déclaré par la vie scolaire (indépendant de l'appel en cours).
 
@@ -86,6 +149,20 @@ class Retard(models.Model):
         verbose_name=_("Validé par"),
     )
     validated_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Validé le"))
+    attendance_record = models.OneToOneField(
+        "attendance.AttendanceRecord",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="retard",
+        verbose_name=_("Séance d'origine (appel)"),
+    )
+    source = models.CharField(
+        max_length=10,
+        choices=RetardSource.choices,
+        default=RetardSource.MANUEL,
+        verbose_name=_("Origine"),
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Créé le"))
 
     class Meta:

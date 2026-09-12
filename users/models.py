@@ -149,6 +149,10 @@ class User(AbstractUser):
     def is_parent(self) -> bool:
         return self.role == Role.PARENT
 
+    @property
+    def is_nurse(self) -> bool:
+        return self.role == Role.NURSE or self.is_superuser
+
     def get_full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
 

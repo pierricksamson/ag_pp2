@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Vie scolaire — Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-clipboard-user text-brand-600"></i>
+        Vie scolaire
+    </h1>
+    <a href="{% url 'vie_scolaire:retard_list' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
+        <i class="fa-solid fa-list"></i> Historique complet des retards
+    </a>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-2xl card-shadow p-5">
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Retards en attente</div>
+        <div class="text-3xl font-extrabold text-amber-600 mt-2">{{ pending_retards_count }}</div>
+    </div>
+    <div class="bg-white rounded-2xl card-shadow p-5">
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Observations récentes</div>
+        <div class="text-3xl font-extrabold text-brand-600 mt-2">{{ observations|length }}</div>
+    </div>
+    <div class="bg-white rounded-2xl card-shadow p-5">
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Passages infirmerie récents</div>
+        <div class="text-3xl font-extrabold text-rose-600 mt-2">{{ infirmerie_flags|length }}</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-clock mr-2 text-amber-500"></i>Retards</h2>
+        </div>
+        <div class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+            {% for r in retards %}
+                <div class="px-6 py-3 flex items-center justify-between">
+                    <div>
+                        <div class="font-medium text-slate-900 text-sm">{{ r.student.user.get_full_name }}</div>
+                        <div class="text-xs text-slate-500">{{ r.date|date:"d/m/Y" }} · {{ r.duration_minutes }} min · {{ r.get_motif_display }}{% if r.source == "APPEL" %} · <span class="text-slate-400">via l'appel</span>{% endif %}</div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                        {% if r.status == 'JUSTIFIED' %}bg-emerald-100 text-emerald-700
+                        {% elif r.status == 'UNJUSTIFIED' %}bg-rose-100 text-rose-700
+                        {% else %}bg-amber-100 text-amber-700{% endif %}">
+                        {{ r.get_status_display }}
+                    </span>
+                </div>
+            {% empty %}
+                <div class="px-6 py-8 text-center text-slate-500 text-sm">Aucun retard récent.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl card-shadow overflow-hidden" x-data="{ openForm: false }">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-comment-dots mr-2 text-brand-500"></i>Observations</h2>
+            <button type="button" @click="openForm = !openForm" class="text-xs px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 font-medium">
+                <i class="fa-solid" :class="openForm ? 'fa-xmark' : 'fa-plus'"></i> <span x-text="openForm ? 'Fermer' : 'Ajouter'"></span>
+            </button>
+        </div>
+        <form method="post" action="{% url 'vie_scolaire:observation_create' %}" class="p-5 space-y-3 bg-slate-50 border-b border-slate-100" x-show="openForm">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Élève</label>
+                    <select name="student" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                        {% for s in students %}<option value="{{ s.id }}">{{ s.user.get_full_name }} — {{ s.class_group|default:"—" }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Type</label>
+                    <select name="type" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                        {% for value, label in observation_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Titre (facultatif)</label>
+                <input type="text" name="title" maxlength="120" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Description</label>
+                <textarea name="description" rows="3" maxlength="1000" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"></textarea>
+            </div>
+            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 text-sm font-medium">
+                <i class="fa-solid fa-check"></i> Enregistrer
+            </button>
+        </form>
+        <div class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+            {% for o in observations %}
+                <div class="px-6 py-3">
+                    <div class="flex items-center justify-between">
+                        <div class="font-medium text-slate-900 text-sm">{{ o.student.user.get_full_name }}</div>
+                        <span class="text-xs text-slate-400">{{ o.created_at|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="text-xs mt-0.5">
+                        <span class="px-2 py-0.5 rounded-full font-semibold
+                            {% if o.type == 'ENCOURAGEMENT' %}bg-emerald-100 text-emerald-700
+                            {% elif o.type == 'SANCTION' or o.type == 'PUNITION' %}bg-rose-100 text-rose-700
+                            {% else %}bg-amber-100 text-amber-700{% endif %}">
+                            {{ o.get_type_display }}
+                        </span>
+                        {% if o.subject %}<span class="text-slate-500 ml-1">· {{ o.subject.name }}</span>{% endif %}
+                    </div>
+                    {% if o.title %}<div class="text-sm text-slate-700 mt-1 font-medium">{{ o.title }}</div>{% endif %}
+                    {% if o.description %}<div class="text-sm text-slate-500 mt-0.5">{{ o.description }}</div>{% endif %}
+                </div>
+            {% empty %}
+                <div class="px-6 py-8 text-center text-slate-500 text-sm">Aucune observation récente.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden mt-6">
+    <div class="px-6 py-4 border-b border-slate-100">
+        <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-kit-medical mr-2 text-rose-500"></i>Infirmerie — élèves concernés récemment</h2>
+        <p class="text-xs text-slate-400 mt-1">Le détail médical n'est visible que par l'infirmerie et l'administration.</p>
+    </div>
+    <div class="divide-y divide-slate-100">
+        {% for v in infirmerie_flags %}
+            <div class="px-6 py-3 flex items-center justify-between">
+                <div class="font-medium text-slate-900 text-sm">{{ v.student__user__first_name }} {{ v.student__user__last_name }}</div>
+                <div class="text-xs text-slate-500">{{ v.arrival_time|date:"d/m/Y H:i" }}</div>
+            </div>
+        {% empty %}
+            <div class="px-6 py-8 text-center text-slate-500 text-sm">Aucun passage récent.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

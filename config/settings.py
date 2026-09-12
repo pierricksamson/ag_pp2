@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'messaging',
     'vie_scolaire',
     'drive',
+    'infirmerie',
 ]
 
 AUTH_USER_MODEL = 'users.User'

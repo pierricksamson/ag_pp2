@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Infirmerie — {{ student.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'infirmerie:dashboard' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
+        <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à l'infirmerie
+    </a>
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-kit-medical text-rose-600"></i>
+        Infirmerie — {{ student.user.get_full_name }}
+    </h1>
+</div>
+
+<div class="bg-white rounded-2xl card-shadow overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+                <th class="text-left px-6 py-3">Arrivée</th>
+                <th class="text-left px-6 py-3">Sortie</th>
+                <th class="text-left px-6 py-3">Motif</th>
+                <th class="text-left px-6 py-3">Soins</th>
+                <th class="text-left px-6 py-3">Suite</th>
+                <th class="text-left px-6 py-3">Parents prévenus</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            {% for v in visits %}
+                <tr>
+                    <td class="px-6 py-3">{{ v.arrival_time|date:"d/m/Y H:i" }}</td>
+                    <td class="px-6 py-3">{{ v.departure_time|date:"H:i"|default:"—" }}</td>
+                    <td class="px-6 py-3">{{ v.get_reason_display }}{% if v.reason_detail %} — {{ v.reason_detail }}{% endif %}</td>
+                    <td class="px-6 py-3">{{ v.care_given|default:"—" }}</td>
+                    <td class="px-6 py-3">{{ v.get_outcome_display }}</td>
+                    <td class="px-6 py-3">{% if v.parent_notified %}<i class="fa-solid fa-check text-emerald-600"></i>{% else %}<i class="fa-solid fa-xmark text-slate-300"></i>{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Aucun passage enregistré.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

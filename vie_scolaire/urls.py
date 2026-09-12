@@ -11,4 +11,6 @@ urlpatterns = [
     path("retards/<int:retard_id>/justifier/", views.retard_justify, name="retard_justify"),
     path("retards/<int:retard_id>/valider/", views.retard_validate, name="retard_validate"),
     path("retards/eleves/<int:student_id>/", views.student_retards, name="student_retards"),
+    path("tableau-de-bord/", views.teacher_dashboard, name="teacher_dashboard"),
+    path("observations/ajouter/", views.observation_create, name="observation_create"),
 ]

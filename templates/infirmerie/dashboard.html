@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Infirmerie{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <i class="fa-solid fa-kit-medical text-rose-600"></i>
+        Infirmerie
+    </h1>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div class="bg-white rounded-2xl card-shadow p-6 lg:col-span-1">
+        <h2 class="font-semibold text-slate-900 mb-4"><i class="fa-solid fa-plus mr-2 text-brand-500"></i>Nouveau passage</h2>
+        <form method="post" action="{% url 'infirmerie:visit_create' %}" class="space-y-3">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Élève</label>
+                <select name="student" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                    {% for s in students %}<option value="{{ s.id }}">{{ s.user.get_full_name }} — {{ s.class_group|default:"—" }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Motif</label>
+                <select name="reason" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
+                    {% for value, label in reason_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">Précision</label>
+                <input type="text" name="reason_detail" maxlength="255" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+            </div>
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
+                <i class="fa-solid fa-check"></i> Enregistrer l'arrivée
+            </button>
+        </form>
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-hourglass-half mr-2 text-amber-500"></i>Actuellement à l'infirmerie</h2>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for v in ongoing %}
+                    <div class="px-6 py-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <div class="font-medium text-slate-900">{{ v.student.user.get_full_name }}</div>
+                                <div class="text-xs text-slate-500">{{ v.student.class_group|default:"—" }} · Arrivé {{ v.arrival_time|date:"H:i" }} · {{ v.get_reason_display }}</div>
+                                {% if v.reason_detail %}<div class="text-xs text-slate-400 mt-0.5">{{ v.reason_detail }}</div>{% endif %}
+                            </div>
+                        </div>
+                        <form method="post" action="{% url 'infirmerie:visit_close' v.id %}" class="flex flex-wrap items-end gap-2">
+                            {% csrf_token %}
+                            <div class="flex-1 min-w-[160px]">
+                                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Suite donnée</label>
+                                <select name="outcome" class="w-full px-2 py-1.5 border border-slate-300 rounded-md text-sm bg-white">
+                                    {% for value, label in outcome_choices %}{% if value != "EN_COURS" %}<option value="{{ value }}">{{ label }}</option>{% endif %}{% endfor %}
+                                </select>
+                            </div>
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Soins prodigués</label>
+                                <input type="text" name="care_given" maxlength="1000" class="w-full px-2 py-1.5 border border-slate-300 rounded-md text-sm">
+                            </div>
+                            <label class="flex items-center gap-1.5 text-xs text-slate-600 mb-1.5">
+                                <input type="checkbox" name="parent_notified" class="rounded border-slate-300 text-brand-600">
+                                Parents prévenus
+                            </label>
+                            <button type="submit" class="px-3 py-1.5 bg-emerald-600 text-white rounded-md text-xs font-medium hover:bg-emerald-700">
+                                <i class="fa-solid fa-check"></i> Clôturer
+                            </button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div class="px-6 py-8 text-center text-slate-500 text-sm">Personne actuellement à l'infirmerie.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-calendar-day mr-2 text-slate-500"></i>Passages aujourd'hui</h2>
+            </div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                    <tr>
+                        <th class="text-left px-6 py-2">Élève</th>
+                        <th class="text-left px-6 py-2">Arrivée</th>
+                        <th class="text-left px-6 py-2">Motif</th>
+                        <th class="text-left px-6 py-2">Suite</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for v in today_visits %}
+                        <tr>
+                            <td class="px-6 py-2">
+                                <a href="{% url 'infirmerie:student_visits' v.student.id %}" class="text-brand-600 hover:underline">{{ v.student.user.get_full_name }}</a>
+                            </td>
+                            <td class="px-6 py-2">{{ v.arrival_time|date:"H:i" }}</td>
+                            <td class="px-6 py-2">{{ v.get_reason_display }}</td>
+                            <td class="px-6 py-2">
+                                {% if v.is_ongoing %}
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">En cours</span>
+                                {% else %}
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">{{ v.get_outcome_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="px-6 py-8 text-center text-slate-500">Aucun passage aujourd'hui.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

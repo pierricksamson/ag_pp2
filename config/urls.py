@@ -15,6 +15,7 @@ urlpatterns = [
     path("vie-scolaire/", include("vie_scolaire.urls", namespace="vie_scolaire")),
     path("messaging/", include("messaging.urls", namespace="messaging")),
     path("drive/", include("drive.urls", namespace="drive")),
+    path("infirmerie/", include("infirmerie.urls", namespace="infirmerie")),
 ]
 
 if settings.DEBUG:

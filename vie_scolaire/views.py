@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from academics.models import ClassGroup
 from users.models import StudentProfile
 
-from .models import Retard, RetardMotif, RetardStatus
+from .models import Observation, ObservationType, Retard, RetardMotif, RetardStatus
 
 
 # ---------- Helpers ----------
@@ -191,7 +191,93 @@ def retard_validate(request: HttpRequest, retard_id: int) -> HttpResponse:
 
 
 # ---------- Statistiques ----------
+# ---------- Tableau de bord professeur ----------
 
+
+def _teacher_classes(teacher_profile):
+    """Classes suivies par le prof (affectation explicite, sinon déduites de son emploi du temps)."""
+    if teacher_profile is None:
+        return ClassGroup.objects.none()
+    assigned = teacher_profile.class_groups.all()
+    if assigned.exists():
+        return assigned
+    return ClassGroup.objects.filter(sessions__teacher=teacher_profile).distinct()
+
+
+@login_required
+def teacher_dashboard(request: HttpRequest) -> HttpResponse:
+    """Tableau de bord vie scolaire du professeur, façon Pronote : retards, observations, infirmerie."""
+    if not request.user.is_teacher:
+        raise PermissionDenied
+
+    teacher = getattr(request.user, "teacher_profile", None)
+    classes = _teacher_classes(teacher)
+    students = StudentProfile.objects.filter(class_group__in=classes).select_related("user", "class_group")
+
+    retards = (
+        Retard.objects.filter(student__in=students)
+        .select_related("student__user", "student__class_group")
+        .order_by("-date", "-created_at")[:20]
+    )
+    observations = (
+        Observation.objects.filter(student__in=students)
+        .select_related("student__user", "subject", "author")
+        .order_by("-created_at")[:20]
+    )
+
+    # On ne remonte qu'un indicateur (nom + heure) : le détail médical reste
+    # réservé à l'infirmerie et à l'administration.
+    infirmerie_flags = []
+    try:
+        from infirmerie.models import InfirmerieVisit
+        infirmerie_flags = list(
+            InfirmerieVisit.objects.filter(student__in=students)
+            .values("student__user__first_name", "student__user__last_name", "arrival_time")
+            .order_by("-arrival_time")[:10]
+        )
+    except Exception:
+        infirmerie_flags = []
+
+    context = {
+        "classes": classes,
+        "students": students,
+        "retards": retards,
+        "observations": observations,
+        "infirmerie_flags": infirmerie_flags,
+        "motif_choices": RetardMotif.choices,
+        "observation_types": ObservationType.choices,
+        "pending_retards_count": Retard.objects.filter(student__in=students, status=RetardStatus.PENDING).count(),
+    }
+    return render(request, "vie_scolaire/teacher_dashboard.html", context)
+
+
+@login_required
+def observation_create(request: HttpRequest) -> HttpResponse:
+    if request.method != "POST":
+        raise PermissionDenied
+    if not (request.user.is_teacher or request.user.is_admin):
+        raise PermissionDenied
+
+    student_id = request.POST.get("student")
+    obs_type = request.POST.get("type") or ObservationType.NOTE
+    subject_id = request.POST.get("subject") or None
+    title = (request.POST.get("title") or "").strip()[:120]
+    description = (request.POST.get("description") or "").strip()[:1000]
+
+    student = get_object_or_404(StudentProfile, id=student_id)
+    if obs_type not in ObservationType.values:
+        obs_type = ObservationType.NOTE
+
+    Observation.objects.create(
+        student=student,
+        type=obs_type,
+        subject_id=subject_id if subject_id else None,
+        title=title,
+        description=description,
+        author=request.user,
+    )
+    messages.success(request, f"Observation ajoutée pour {student.user.get_full_name()}.")
+    return redirect("vie_scolaire:teacher_dashboard")
 
 @login_required
 def retard_stats(request: HttpRequest) -> HttpResponse:

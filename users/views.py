@@ -85,6 +85,8 @@ def role_redirect(request: HttpRequest) -> HttpResponse:
         return redirect("users:dashboard_student")
     if user.is_parent:
         return redirect("users:dashboard_parent")
+    if user.is_nurse:
+        return redirect("infirmerie:dashboard")
     # Fallback prudent
     return redirect("users:login")
 
