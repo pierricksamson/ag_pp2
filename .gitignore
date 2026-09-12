@@ -28,3 +28,6 @@ Thumbs.db
 A*.md
 ADEMI_MEMORY.md
 *.patch
+
+# Sphinx documentation build output
+docs/build/
