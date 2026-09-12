@@ -1288,3 +1288,237 @@ erDiagram
     SCHOOL ||--o{ AUDIT_LOG : records
     APP_USER ||--o{ AUDIT_LOG : performs
 ```
+
+Modèle modulaire recommandé
+```mermaid
+erDiagram
+    %% Noyau : identite et structure scolaire
+    APP_USER["USER"] {
+        string id PK
+        string email UK
+        string first_name
+        string last_name
+        string phone
+        boolean is_active
+    }
+
+    ROLE {
+        string id PK
+        string name UK
+    }
+
+    USER_ROLE {
+        string user_id FK
+        string role_id FK
+    }
+
+    SCHOOL {
+        string id PK
+        string name
+    }
+
+    ACADEMIC_YEAR {
+        string id PK
+        string school_id FK
+        string label
+        date start_date
+        date end_date
+        boolean is_current
+    }
+
+    TERM {
+        string id PK
+        string academic_year_id FK
+        string name
+        date start_date
+        date end_date
+    }
+
+    GRADE_LEVEL {
+        string id PK
+        string school_id FK
+        string name
+        int sequence
+    }
+
+    SCHOOL_CLASS["CLASS"] {
+        string id PK
+        string academic_year_id FK
+        string grade_level_id FK
+        string name
+    }
+
+    STUDENT {
+        string id PK
+        string user_id FK
+        string admission_number UK
+        date date_of_birth
+    }
+
+    GUARDIAN {
+        string id PK
+        string user_id FK
+        string relationship
+    }
+
+    STAFF {
+        string id PK
+        string user_id FK
+        string employee_number UK
+        string job_title
+    }
+
+    ENROLLMENT {
+        string id PK
+        string class_id FK
+        string student_id FK
+        date enrollment_date
+        string status
+    }
+
+    STUDENT_GUARDIAN {
+        string student_id FK
+        string guardian_id FK
+        boolean is_primary
+    }
+
+    %% Module pedagogique : matieres, evaluations et notes
+    SUBJECT {
+        string id PK
+        string school_id FK
+        string name
+        string code
+    }
+
+    CLASS_SUBJECT {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        string teacher_id FK
+    }
+
+    EVALUATION {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        string term_id FK
+        string teacher_id FK
+        string title
+        date evaluation_date
+        decimal coefficient
+        decimal scale_max
+    }
+
+    GRADE {
+        string id PK
+        string evaluation_id FK
+        string student_id FK
+        decimal value
+        string status
+        string comment
+    }
+
+    %% Module emploi du temps
+    ROOM {
+        string id PK
+        string name UK
+        int capacity
+    }
+
+    COURSE_SESSION {
+        string id PK
+        string class_id FK
+        string subject_id FK
+        string teacher_id FK
+        string room_id FK
+        string day
+        string start_time
+        string end_time
+    }
+
+    %% Module presence
+    ATTENDANCE_RECORD {
+        string id PK
+        string student_id FK
+        string session_id FK
+        string recorded_by FK
+        string status
+        int minutes_late
+        string reason
+    }
+
+    %% Module communication
+    CONVERSATION {
+        string id PK
+        string subject
+        string kind
+    }
+
+    CONVERSATION_MEMBER {
+        string conversation_id FK
+        string user_id FK
+    }
+
+    MESSAGE {
+        string id PK
+        string conversation_id FK
+        string sender_id FK
+        string body
+        datetime sent_at
+    }
+
+    %% Module vie scolaire
+    LATE_RECORD {
+        string id PK
+        string student_id FK
+        string declared_by FK
+        date date
+        int duration_minutes
+        string reason
+        string status
+    }
+
+    SCHOOL ||--o{ ACADEMIC_YEAR : manages
+    SCHOOL ||--o{ GRADE_LEVEL : defines
+    SCHOOL ||--o{ SUBJECT : offers
+    ACADEMIC_YEAR ||--o{ TERM : contains
+    ACADEMIC_YEAR ||--o{ SCHOOL_CLASS : organizes
+    GRADE_LEVEL ||--o{ SCHOOL_CLASS : groups
+
+    APP_USER ||--o{ USER_ROLE : receives
+    ROLE ||--o{ USER_ROLE : grants
+    APP_USER ||--o| STUDENT : owns
+    APP_USER ||--o| GUARDIAN : owns
+    APP_USER ||--o| STAFF : owns
+
+    SCHOOL_CLASS ||--o{ ENROLLMENT : contains
+    STUDENT ||--o{ ENROLLMENT : joins
+    STUDENT ||--o{ STUDENT_GUARDIAN : has
+    GUARDIAN ||--o{ STUDENT_GUARDIAN : represents
+
+    SCHOOL_CLASS ||--o{ CLASS_SUBJECT : teaches
+    SUBJECT ||--o{ CLASS_SUBJECT : belongs_to
+    STAFF ||--o{ CLASS_SUBJECT : teaches
+    SCHOOL_CLASS ||--o{ EVALUATION : receives
+    SUBJECT ||--o{ EVALUATION : assesses
+    TERM ||--o{ EVALUATION : schedules
+    STAFF ||--o{ EVALUATION : creates
+    EVALUATION ||--o{ GRADE : produces
+    STUDENT ||--o{ GRADE : receives
+
+    SCHOOL_CLASS ||--o{ COURSE_SESSION : follows
+    SUBJECT ||--o{ COURSE_SESSION : covers
+    STAFF ||--o{ COURSE_SESSION : leads
+    ROOM ||--o{ COURSE_SESSION : hosts
+    COURSE_SESSION ||--o{ ATTENDANCE_RECORD : records
+    STUDENT ||--o{ ATTENDANCE_RECORD : has
+    STAFF ||--o{ ATTENDANCE_RECORD : records_by
+
+    CONVERSATION ||--o{ CONVERSATION_MEMBER : includes
+    APP_USER ||--o{ CONVERSATION_MEMBER : participates
+    CONVERSATION ||--o{ MESSAGE : contains
+    APP_USER ||--o{ MESSAGE : sends
+
+    STUDENT ||--o{ LATE_RECORD : accumulates
+    APP_USER ||--o{ LATE_RECORD : declares
+```
