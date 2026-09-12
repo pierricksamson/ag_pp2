@@ -271,3 +271,4 @@ rm db.sqlite3 && .venv\Scripts\python.exe manage.py migrate
 - [x] **Étape 5 — Emploi du temps + saisie Excel-like** ← vous êtes ici
 - [ ] Étape 6 — Appels (attendance)
 - [ ] Étape 7 — Messagerie interne
+
