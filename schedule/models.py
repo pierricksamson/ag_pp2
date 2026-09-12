@@ -7,6 +7,7 @@ Le modèle est volontairement flexible :
   du supérieur (2 à 4 h).
 """
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -118,6 +119,13 @@ class CourseSession(models.Model):
         indexes = [
             models.Index(fields=["day", "start_time"]),
         ]
+
+    def clean(self):
+        super().clean()
+        if self.start_time and self.end_time and self.end_time <= self.start_time:
+            raise ValidationError({
+                "end_time": _("L'heure de fin doit être après l'heure de début."),
+            })
 
     def __str__(self) -> str:
         label = self.title or str(self.subject)
