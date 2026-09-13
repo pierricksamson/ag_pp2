@@ -1,12 +1,9 @@
-.. ag_pp2 documentation master file, created by
-   sphinx-quickstart on Sat Sep 12 15:58:26 2026.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Documentation Espace scolaire
+=============================
 
-ag_pp2 documentation
-====================
-
-Bienvenue dans la documentation du projet.
+Documentation technique de l'application de gestion d'établissement scolaire.
+Elle couvre les modèles de l'ensemble des modules : utilisateurs, scolarité,
+emploi du temps, présence, vie scolaire, messagerie, Drive et infirmerie.
 
 .. toctree::
    :maxdepth: 2
