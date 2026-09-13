@@ -1,14 +1,60 @@
-Models
-======
+Référence des modèles
+=====================
 
-CourseSession
--------------
+Cette page décrit les modèles de données de l'application. Les rôles et règles d'accès sont présentés dans le README du projet.
 
-.. autoclass:: schedule.models.CourseSession
+Utilisateurs
+------------
+
+.. automodule:: users.models
    :members:
+   :undoc-members:
 
-Room
-----
+Scolarité et notes
+------------------
 
-.. autoclass:: schedule.models.Room
+.. automodule:: academics.models
    :members:
+   :undoc-members:
+
+Emploi du temps
+---------------
+
+.. automodule:: schedule.models
+   :members:
+   :undoc-members:
+
+Appels et absences
+------------------
+
+.. automodule:: attendance.models
+   :members:
+   :undoc-members:
+
+Vie scolaire
+------------
+
+.. automodule:: vie_scolaire.models
+   :members:
+   :undoc-members:
+
+Messagerie
+----------
+
+.. automodule:: messaging.models
+   :members:
+   :undoc-members:
+
+Drive
+-----
+
+.. automodule:: drive.models
+   :members:
+   :undoc-members:
+
+Infirmerie
+----------
+
+.. automodule:: infirmerie.models
+   :members:
+   :undoc-members:
