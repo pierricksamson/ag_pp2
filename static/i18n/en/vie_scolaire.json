@@ -50,5 +50,7 @@
   "type": "Type",
   "validation": "Validation",
   "via_l_appel": "via roll call",
-  "vie_scolaire": "Student affairs"
+  "vie_scolaire": "Student affairs",
+  "ex_motif_detail": "E.g.: bus late, medical appointment…",
+  "ex_motif": "Reason…"
 }

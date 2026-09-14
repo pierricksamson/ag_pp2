@@ -18,6 +18,11 @@
 
   const STATIC_BASE = (document.currentScript && document.currentScript.dataset.staticBase) || "/static/";
 
+  // Cache en mémoire des dictionnaires déjà résolus (par langue), pour ne
+  // jamais recharger deux fois le même fichier JSON pendant la session
+  // (ex : aller-retour fr -> en -> fr).
+  const dictCache = Object.create(null);
+
   function getStoredLang() {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored && SUPPORTED_LANGS.includes(stored)) return stored;
@@ -31,16 +36,19 @@
 
   async function loadNamespace(lang, ns) {
     const url = `${STATIC_BASE}i18n/${lang}/${ns}.json`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) throw new Error(`i18n: impossible de charger ${url}`);
     return res.json();
   }
 
   async function loadDictionary(lang) {
+    // Les namespaces sont indépendants : on les charge tous en parallèle
+    // plutôt qu'en séquence, ce qui divise le temps de chargement par le
+    // nombre de fichiers (au lieu de les attendre un par un).
+    const results = await Promise.all(NAMESPACES.map((ns) => loadNamespace(lang, ns)));
     const dict = {};
-    for (const ns of NAMESPACES) {
-      const nsDict = await loadNamespace(lang, ns);
-      for (const [key, value] of Object.entries(nsDict)) {
+    NAMESPACES.forEach((ns, i) => {
+      for (const [key, value] of Object.entries(results[i])) {
         // "common" garde ses clés telles quelles (ex: "nav.dashboard"),
         // les autres namespaces sont préfixés pour matcher data-i18n="ns.key"
         // et éviter toute collision entre fichiers (ex: "Retards" traduit
@@ -48,8 +56,13 @@
         const finalKey = ns === "common" ? key : `${ns}.${key}`;
         dict[finalKey] = value;
       }
-    }
+    });
     return dict;
+  }
+
+  async function getDictionary(lang) {
+    if (!dictCache[lang]) dictCache[lang] = loadDictionary(lang);
+    return dictCache[lang];
   }
 
   function applyTranslations(dict) {
@@ -76,7 +89,7 @@
     setStoredLang(lang);
     window.AdemiI18n.currentLang = lang;
     document.documentElement.setAttribute("lang", lang);
-    const dict = await loadDictionary(lang);
+    const dict = await getDictionary(lang);
     applyTranslations(dict);
     document.dispatchEvent(new CustomEvent("ademi:lang-changed", { detail: { lang, dict } }));
   }
@@ -87,7 +100,17 @@
     setLang,
   };
 
-  document.addEventListener("DOMContentLoaded", () => {
+  // Le contenu textuel n'existe plus dans le HTML : tout passe par le
+  // dictionnaire i18n, y compris pour le français par défaut. On lance le
+  // fetch (parallélisé) dès que possible, sans attendre DOMContentLoaded,
+  // pour réduire le délai avant l'affichage du texte.
+  function boot() {
     setLang(window.AdemiI18n.currentLang);
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
 })();

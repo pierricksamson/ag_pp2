@@ -6,15 +6,15 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
         <i class="fa-solid fa-clock text-amber-600"></i>
-        <span data-i18n="vie_scolaire.retards_historique">Retards — Historique</span>
+        <span data-i18n="vie_scolaire.retards_historique"></span>
     </h1>
     {% if can_manage %}
         <div class="flex gap-2">
             <a href="{% url 'vie_scolaire:retard_stats' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50">
-                <i class="fa-solid fa-chart-column"></i> <span data-i18n="vie_scolaire.statistiques">Statistiques</span>
+                <i class="fa-solid fa-chart-column"></i> <span data-i18n="vie_scolaire.statistiques"></span>
             </a>
             <a href="{% url 'vie_scolaire:retard_declare' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-sm">
-                <i class="fa-solid fa-plus"></i> <span data-i18n="vie_scolaire.declarer_un_retard">Déclarer un retard</span>
+                <i class="fa-solid fa-plus"></i> <span data-i18n="vie_scolaire.declarer_un_retard"></span>
             </a>
         </div>
     {% endif %}
@@ -23,25 +23,25 @@
 {% if can_manage %}
 <form method="get" class="bg-white rounded-2xl card-shadow p-4 mb-5 flex flex-wrap gap-3 items-end">
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="vie_scolaire.classe">Classe</span></label>
+        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="vie_scolaire.classe"></span></label>
         <select name="class_group" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-            <option value=""><span data-i18n="vie_scolaire.toutes">Toutes</span></option>
+            <option value=""><span data-i18n="vie_scolaire.toutes"></span></option>
             {% for c in class_groups %}
                 <option value="{{ c.id }}" {% if filters.class_group == c.id|stringformat:"s" %}selected{% endif %}>{{ c }}</option>
             {% endfor %}
         </select>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="vie_scolaire.statut">Statut</span></label>
+        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="vie_scolaire.statut"></span></label>
         <select name="status" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-            <option value=""><span data-i18n="vie_scolaire.tous">Tous</span></option>
+            <option value=""><span data-i18n="vie_scolaire.tous"></span></option>
             {% for value, label in status_choices %}
                 <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
     </div>
     <button type="submit" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900">
-        <i class="fa-solid fa-filter mr-1"></i><span data-i18n="vie_scolaire.filtrer">Filtrer</span>
+        <i class="fa-solid fa-filter mr-1"></i><span data-i18n="vie_scolaire.filtrer"></span>
     </button>
 </form>
 {% endif %}
@@ -50,12 +50,12 @@
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.eleve">Élève</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.date">Date</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.duree">Durée</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.motif">Motif</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.validation">Validation</span></th>
-                {% if can_manage %}<th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.action">Action</span></th>{% endif %}
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.eleve"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.date"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.duree"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.motif"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.validation"></span></th>
+                {% if can_manage %}<th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.action"></span></th>{% endif %}
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -86,10 +86,10 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                 <button type="submit" name="decision" value="justify" class="px-2.5 py-1 bg-emerald-600 text-white rounded-md text-xs font-medium hover:bg-emerald-700">
-                                    <i class="fa-solid fa-check"></i> <span data-i18n="vie_scolaire.justifier">Justifier</span>
+                                    <i class="fa-solid fa-check"></i> <span data-i18n="vie_scolaire.justifier"></span>
                                 </button>
                                 <button type="submit" name="decision" value="unjustify" class="px-2.5 py-1 bg-rose-600 text-white rounded-md text-xs font-medium hover:bg-rose-700">
-                                    <i class="fa-solid fa-xmark"></i> <span data-i18n="vie_scolaire.non_justifie">Non justifié</span>
+                                    <i class="fa-solid fa-xmark"></i> <span data-i18n="vie_scolaire.non_justifie"></span>
                                 </button>
                             </form>
                         {% else %}
@@ -99,7 +99,7 @@
                     {% endif %}
                 </tr>
             {% empty %}
-                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500"><span data-i18n="vie_scolaire.aucun_retard_enregistre">Aucun retard enregistré.</span></td></tr>
+                <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500"><span data-i18n="vie_scolaire.aucun_retard_enregistre"></span></td></tr>
             {% endfor %}
         </tbody>
     </table>

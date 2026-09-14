@@ -22,7 +22,7 @@
             </p>
         </div>
         <div class="text-xs px-3 py-1.5 rounded-full bg-brand-50 text-brand-700 border border-brand-100 font-semibold uppercase tracking-wide">
-            <span data-i18n="schedule.semaine_en_cours">Semaine en cours</span>
+            <span data-i18n="schedule.semaine_en_cours"></span>
         </div>
     </div>
 </div>
@@ -31,27 +31,27 @@
 <form method="get" class="bg-white rounded-2xl card-shadow p-4 mb-6">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="schedule.classe">Classe</span></label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="schedule.classe"></span></label>
             <select name="class" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white">
-                <option value=""><span data-i18n="schedule.toutes">— Toutes —</span></option>
+                <option value=""><span data-i18n="schedule.toutes"></span></option>
                 {% for cg in filters.class_groups %}
                     <option value="{{ cg.id }}" {% if filters.class_id|stringformat:"s" == cg.id|stringformat:"s" %}selected{% endif %}>{{ cg }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="schedule.professeur">Professeur</span></label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="schedule.professeur"></span></label>
             <select name="teacher" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white">
-                <option value=""><span data-i18n="schedule.tous">— Tous —</span></option>
+                <option value=""><span data-i18n="schedule.tous"></span></option>
                 {% for t in filters.teachers %}
                     <option value="{{ t.id }}" {% if filters.teacher_id|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>{{ t }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="schedule.salle">Salle</span></label>
+            <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="schedule.salle"></span></label>
             <select name="room" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-500 bg-white">
-                <option value=""><span data-i18n="schedule.toutes">— Toutes —</span></option>
+                <option value=""><span data-i18n="schedule.toutes"></span></option>
                 {% for r in filters.rooms %}
                     <option value="{{ r.id }}" {% if filters.room_id|stringformat:"s" == r.id|stringformat:"s" %}selected{% endif %}>{{ r.name }}</option>
                 {% endfor %}
@@ -59,10 +59,10 @@
         </div>
         <div class="flex items-end gap-2">
             <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
-                <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="schedule.filtrer">Filtrer</span>
+                <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="schedule.filtrer"></span>
             </button>
             <a href="{% url 'schedule:weekly' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-medium">
-                <i class="fa-solid fa-rotate-left"></i> <span data-i18n="schedule.reset">Reset</span>
+                <i class="fa-solid fa-rotate-left"></i> <span data-i18n="schedule.reset"></span>
             </a>
         </div>
     </div>
@@ -72,8 +72,8 @@
 {% if not blocks %}
     <div class="bg-white rounded-2xl card-shadow p-12 text-center">
         <i class="fa-solid fa-calendar-xmark text-5xl text-slate-300 mb-4 block"></i>
-        <h3 class="text-lg font-semibold text-slate-700"><span data-i18n="schedule.aucune_seance_planifiee">Aucune séance planifiée.</span></h3>
-        <p class="text-slate-500 text-sm mt-1"><span data-i18n="schedule.ajoutez_des_seances_depuis_l_administrat">Ajoutez des séances depuis l'administration Django pour les voir apparaître ici.</span></p>
+        <h3 class="text-lg font-semibold text-slate-700"><span data-i18n="schedule.aucune_seance_planifiee"></span></h3>
+        <p class="text-slate-500 text-sm mt-1"><span data-i18n="schedule.ajoutez_des_seances_depuis_l_administrat"></span></p>
     </div>
 {% else %}
 <div class="bg-white rounded-2xl card-shadow overflow-hidden">
@@ -145,7 +145,7 @@
                                 {% endif %}
                                 {% if role == "teacher" or role == "admin" %}
                                     <a href="{% url 'attendance:take_attendance' b.session.id %}" class="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold underline underline-offset-2 opacity-90 hover:opacity-100">
-                                        <i class="fa-solid fa-clipboard-user"></i> <span data-i18n="schedule.faire_l_appel">Faire l'appel</span>
+                                        <i class="fa-solid fa-clipboard-user"></i> <span data-i18n="schedule.faire_l_appel"></span>
                                     </a>
                                 {% endif %}
                             </div>
@@ -159,7 +159,7 @@
 
 <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
     <i class="fa-solid fa-circle-info"></i>
-    <span data-i18n="schedule.survolez_une_carte_pour_voir_le_detail_l">Survolez une carte pour voir le détail. Les séances colorées sont regroupées par matière.</span>
+    <span data-i18n="schedule.survolez_une_carte_pour_voir_le_detail_l"></span>
 </div>
 {% endif %}
 {% endblock %}

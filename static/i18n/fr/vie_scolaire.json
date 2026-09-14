@@ -50,5 +50,7 @@
   "type": "Type",
   "validation": "Validation",
   "via_l_appel": "via l'appel",
-  "vie_scolaire": "Vie scolaire"
+  "vie_scolaire": "Vie scolaire",
+  "ex_motif_detail": "Ex : bus en retard, rendez-vous médical…",
+  "ex_motif": "Motif…"
 }

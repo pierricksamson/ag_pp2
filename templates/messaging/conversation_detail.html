@@ -7,11 +7,11 @@
     <div class="mb-4">
         {% if conversation.kind == "CHAT" %}
             <a href="{% url 'messaging:chat_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
-                <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="messaging.retour_au_chat">Retour au chat</span>
+                <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="messaging.retour_au_chat"></span>
             </a>
         {% else %}
             <a href="{% url 'messaging:inbox' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
-                <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="messaging.retour_a_la_messagerie">Retour à la messagerie</span>
+                <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="messaging.retour_a_la_messagerie"></span>
             </a>
         {% endif %}
     </div>
@@ -26,11 +26,11 @@
                 <div class="text-slate-500 mb-4">
                     {% if conversation.messages.first %}
                     <div class="flex items-center gap-4 mb-1">
-                        <span class="font-semibold"><span data-i18n="messaging.de">De :</span></span>
+                        <span class="font-semibold"><span data-i18n="messaging.de"></span></span>
                         <span class="ml-2">{{ conversation.messages.first.sender.get_full_name }}</span>
                     </div>
                     <div class="flex items-center gap-4 mb-1">
-                        <span class="font-semibold">À :</span>
+                        <span class="font-semibold" data-i18n="messaging.a"></span>
                         <span class="ml-2">
                             {% for m in conversation.messages.all %}
                                 {% for u in m.to_recipients.all %}
@@ -41,7 +41,7 @@
                     </div>
                     {% if conversation.messages.first.cc_recipients.all %}
                         <div class="flex items-center gap-4 mb-1">
-                            <span class="font-semibold"><span data-i18n="messaging.cc">CC :</span></span>
+                            <span class="font-semibold"><span data-i18n="messaging.cc"></span></span>
                             <span class="ml-2">
                                 {% for m in conversation.messages.all %}
                                     {% for u in m.cc_recipients.all %}
@@ -61,18 +61,18 @@
             <!-- Action buttons -->
             <div class="flex flex-wrap gap-3 p-6 border-t border-slate-100">
                 <a href="{% url 'messaging:reply' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
-                    <i class="fa-solid fa-reply"></i> <span data-i18n="messaging.repondre">Répondre</span>
+                    <i class="fa-solid fa-reply"></i> <span data-i18n="messaging.repondre"></span>
                 </a>
                 <a href="{% url 'messaging:reply_all' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-100 text-brand-700 border border-brand-200 rounded-lg hover:bg-brand-200 font-medium">
-                    <i class="fa-solid fa-reply-all"></i> <span data-i18n="messaging.repondre_a_tous">Répondre à tous</span>
+                    <i class="fa-solid fa-reply-all"></i> <span data-i18n="messaging.repondre_a_tous"></span>
                 </a>
                 <a href="{% url 'messaging:forward' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 font-medium">
-                    <i class="fa-solid fa-forward"></i> <span data-i18n="messaging.transferer">Transférer</span>
+                    <i class="fa-solid fa-forward"></i> <span data-i18n="messaging.transferer"></span>
                 </a>
                 <form method="post" action="{% url 'messaging:delete_message' conversation.messages.first.id %}" class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 font-medium">
                     {% csrf_token %}
                     <button type="submit">
-                        <i class="fa-solid fa-trash"></i> <span data-i18n="messaging.supprimer">Supprimer</span>
+                        <i class="fa-solid fa-trash"></i> <span data-i18n="messaging.supprimer"></span>
                     </button>
                 </form>
             </div>
@@ -122,7 +122,7 @@
                 {% empty %}
                     <div class="p-8 text-center text-slate-500">
                         <i class="fa-solid fa-envelope text-4xl mb-4"></i>
-                        <p><span data-i18n="messaging.aucun_message_dans_cette_conversation">Aucun message dans cette conversation.</span></p>
+                        <p><span data-i18n="messaging.aucun_message_dans_cette_conversation"></span></p>
                     </div>
                 {% endfor %}
             </div>

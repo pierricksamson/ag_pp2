@@ -11,7 +11,7 @@
 
     <div class="mb-6">
         <a href="{% url 'schedule:weekly' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
-            <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="attendance.retour_a_l_emploi_du_temps">Retour à l'emploi du temps</span>
+            <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="attendance.retour_a_l_emploi_du_temps"></span>
         </a>
         <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
             <i class="fa-solid fa-clipboard-user text-brand-600"></i>
@@ -26,19 +26,19 @@
     {# Indicateurs synthétiques #}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-2xl card-shadow p-5">
-            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.presents">Présents</span></div>
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.presents"></span></div>
             <div class="text-3xl font-extrabold text-emerald-600 mt-2" x-text="stats.present"></div>
         </div>
         <div class="bg-white rounded-2xl card-shadow p-5">
-            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.absents">Absents</span></div>
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.absents"></span></div>
             <div class="text-3xl font-extrabold text-rose-600 mt-2" x-text="stats.absent"></div>
         </div>
         <div class="bg-white rounded-2xl card-shadow p-5">
-            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.retards">Retards</span></div>
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.retards"></span></div>
             <div class="text-3xl font-extrabold text-amber-600 mt-2" x-text="stats.late"></div>
         </div>
         <div class="bg-white rounded-2xl card-shadow p-5">
-            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.taux_de_presence">Taux de présence</span></div>
+            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="attendance.taux_de_presence"></span></div>
             <div class="text-3xl font-extrabold text-brand-600 mt-2" x-text="stats.total ? stats.attendance_rate + '%' : '—'"></div>
         </div>
     </div>
@@ -47,19 +47,19 @@
         {% csrf_token %}
         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100">
-                <h2 class="font-semibold text-slate-900"><span data-i18n="attendance.liste_d_appel">Liste d'appel</span></h2>
-                <p class="text-xs text-slate-500 mt-1"><span data-i18n="attendance.changez_le_statut_de_chaque_eleve_il_est">Changez le statut de chaque élève, il est sauvegardé automatiquement à la sortie du champ.</span></p>
+                <h2 class="font-semibold text-slate-900"><span data-i18n="attendance.liste_d_appel"></span></h2>
+                <p class="text-xs text-slate-500 mt-1"><span data-i18n="attendance.changez_le_statut_de_chaque_eleve_il_est"></span></p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                         <tr>
                             <th class="text-left px-6 py-3 w-10">#</th>
-                            <th class="text-left px-6 py-3"><span data-i18n="attendance.eleve">Élève</span></th>
-                            <th class="text-left px-6 py-3 w-48"><span data-i18n="attendance.statut">Statut</span></th>
-                            <th class="text-left px-6 py-3 w-32"><span data-i18n="attendance.retard_min">Retard (min)</span></th>
-                            <th class="text-left px-6 py-3"><span data-i18n="attendance.motif">Motif</span></th>
-                            <th class="text-left px-6 py-3 w-24"><span data-i18n="attendance.etat">État</span></th>
+                            <th class="text-left px-6 py-3"><span data-i18n="attendance.eleve"></span></th>
+                            <th class="text-left px-6 py-3 w-48"><span data-i18n="attendance.statut"></span></th>
+                            <th class="text-left px-6 py-3 w-32"><span data-i18n="attendance.retard_min"></span></th>
+                            <th class="text-left px-6 py-3"><span data-i18n="attendance.motif"></span></th>
+                            <th class="text-left px-6 py-3 w-24"><span data-i18n="attendance.etat"></span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -94,7 +94,7 @@
                                 </td>
                                 <td class="px-6 py-2">
                                     <input type="text" x-model="reason" @input="onChange()"
-                                           name="reason_{{ r.id }}" maxlength="255" placeholder="Motif libre…"
+                                           name="reason_{{ r.id }}" maxlength="255" data-i18n-attr="placeholder:attendance.ex_motif_libre"
                                            class="w-full px-2 py-1.5 border border-slate-200 rounded-md focus:ring-2 focus:ring-brand-500 text-sm">
                                 </td>
                                 <td class="px-6 py-2 text-center">
@@ -102,7 +102,7 @@
                                 </td>
                             </tr>
                         {% empty %}
-                            <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500"><span data-i18n="attendance.aucun_eleve">Aucun élève.</span></td></tr>
+                            <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500"><span data-i18n="attendance.aucun_eleve"></span></td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -112,7 +112,7 @@
         <div class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
                 <div class="text-xs text-slate-500">
-                    <span x-text="dirtyCount"></span> <span data-i18n="attendance.saisie_s_modifiee_s">saisie(s) modifiée(s) ·</span> <span x-text="savedCount"></span> <span data-i18n="attendance.sauvegardee_s">sauvegardée(s)</span>
+                    <span x-text="dirtyCount"></span> <span data-i18n="attendance.saisie_s_modifiee_s"></span> <span x-text="savedCount"></span> <span data-i18n="attendance.sauvegardee_s"></span>
                 </div>
                 <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
                     <i class="fa-solid fa-floppy-disk"></i>

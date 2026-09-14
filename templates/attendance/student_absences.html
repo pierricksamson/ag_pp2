@@ -24,10 +24,10 @@
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-                <th class="text-left px-6 py-3"><span data-i18n="attendance.seance">Séance</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="attendance.statut">Statut</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="attendance.justifie">Justifié</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="attendance.action">Action</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="attendance.seance"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="attendance.statut"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="attendance.justifie"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="attendance.action"></span></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -48,9 +48,9 @@
                     </td>
                     <td class="px-6 py-3">
                         {% if r.justified %}
-                            <span class="text-emerald-600 text-xs font-semibold"><i class="fa-solid fa-check"></i> <span data-i18n="attendance.justifie">Justifié</span></span>
+                            <span class="text-emerald-600 text-xs font-semibold"><i class="fa-solid fa-check"></i> <span data-i18n="attendance.justifie"></span></span>
                         {% elif r.needs_justification %}
-                            <span class="text-rose-600 text-xs font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="attendance.non_justifie">Non justifié</span></span>
+                            <span class="text-rose-600 text-xs font-semibold"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="attendance.non_justifie"></span></span>
                         {% else %}
                             <span class="text-slate-400 text-xs">—</span>
                         {% endif %}
@@ -59,17 +59,17 @@
                         {% if can_justify and r.needs_justification and not r.justified %}
                             <form method="post" action="{% url 'attendance:justify_absence' r.id %}" class="flex items-center gap-2">
                                 {% csrf_token %}
-                                <input type="text" name="reason" maxlength="1000" placeholder="Motif…" required
+                                <input type="text" name="reason" maxlength="1000" data-i18n-attr="placeholder:attendance.ex_motif" required
                                        class="px-2 py-1 border border-slate-300 rounded-md text-xs">
                                 <button type="submit" class="px-3 py-1 bg-brand-600 text-white rounded-md text-xs font-medium hover:bg-brand-700">
-                                    <span data-i18n="attendance.justifier">Justifier</span>
+                                    <span data-i18n="attendance.justifier"></span>
                                 </button>
                             </form>
                         {% endif %}
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="4" class="px-6 py-12 text-center text-slate-500"><span data-i18n="attendance.aucune_absence_enregistree">Aucune absence enregistrée.</span></td></tr>
+                <tr><td colspan="4" class="px-6 py-12 text-center text-slate-500"><span data-i18n="attendance.aucune_absence_enregistree"></span></td></tr>
             {% endfor %}
         </tbody>
     </table>

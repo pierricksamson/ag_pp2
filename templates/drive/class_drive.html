@@ -6,7 +6,7 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
         <a href="{% url 'drive:personal' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
-            <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="drive.retour_a_mon_drive">Retour à mon Drive</span>
+            <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="drive.retour_a_mon_drive"></span>
         </a>
         <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
             <i class="fa-solid fa-users-rectangle text-brand-600"></i>
@@ -26,33 +26,33 @@
 
 <div class="bg-white rounded-2xl card-shadow p-5 mb-6">
     <div class="flex items-center justify-between text-sm mb-2">
-        <span class="font-semibold text-slate-700"><span data-i18n="drive.votre_espace_personnel_utilise">Votre espace personnel utilisé</span></span>
+        <span class="font-semibold text-slate-700"><span data-i18n="drive.votre_espace_personnel_utilise"></span></span>
         <span class="text-slate-500">{{ usage_mb }} Mo / {{ quota_mb }} Mo</span>
     </div>
     <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
         <div class="h-full {% if usage_pct >= 90 %}bg-rose-500{% elif usage_pct >= 70 %}bg-amber-500{% else %}bg-brand-500{% endif %}" style="width: {{ usage_pct }}%;"></div>
     </div>
-    <p class="text-xs text-slate-400 mt-2"><span data-i18n="drive.les_fichiers_deposes_ici_comptent_dans_v">Les fichiers déposés ici comptent dans votre propre quota.</span></p>
+    <p class="text-xs text-slate-400 mt-2"><span data-i18n="drive.les_fichiers_deposes_ici_comptent_dans_v"></span></p>
 </div>
 
 <form method="post" enctype="multipart/form-data" class="bg-white rounded-2xl card-shadow p-5 mb-6 flex flex-wrap items-center gap-3">
     {% csrf_token %}
     <input type="file" name="file" accept="application/pdf,.pdf" required class="text-sm">
     <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
-        <i class="fa-solid fa-upload"></i> <span data-i18n="drive.envoyer_un_pdf">Envoyer un PDF</span>
+        <i class="fa-solid fa-upload"></i> <span data-i18n="drive.envoyer_un_pdf"></span>
     </button>
-    <span class="text-xs text-slate-400"><span data-i18n="drive.fichiers_pdf_uniquement">Fichiers PDF uniquement.</span></span>
+    <span class="text-xs text-slate-400"><span data-i18n="drive.fichiers_pdf_uniquement"></span></span>
 </form>
 
 <div class="bg-white rounded-2xl card-shadow overflow-hidden">
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-                <th class="text-left px-6 py-3"><span data-i18n="drive.fichier">Fichier</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="drive.depose_par">Déposé par</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="drive.taille">Taille</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="drive.depose_le">Déposé le</span></th>
-                <th class="text-right px-6 py-3"><span data-i18n="drive.action">Action</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="drive.fichier"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="drive.depose_par"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="drive.taille"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="drive.depose_le"></span></th>
+                <th class="text-right px-6 py-3"><span data-i18n="drive.action"></span></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -71,7 +71,7 @@
                             <form method="post" action="{% url 'drive:delete_file' f.id %}" onsubmit="return confirm('Supprimer ce fichier ?');">
                                 {% csrf_token %}
                                 <button type="submit" class="text-xs text-rose-600 hover:underline">
-                                    <i class="fa-solid fa-trash mr-1"></i><span data-i18n="drive.supprimer">Supprimer</span>
+                                    <i class="fa-solid fa-trash mr-1"></i><span data-i18n="drive.supprimer"></span>
                                 </button>
                             </form>
                         {% else %}
@@ -82,7 +82,7 @@
             {% empty %}
                 <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">
                     <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-3 block"></i>
-                    <span data-i18n="drive.aucun_fichier_pour_le_moment">Aucun fichier pour le moment.</span>
+                    <span data-i18n="drive.aucun_fichier_pour_le_moment"></span>
                 </td></tr>
             {% endfor %}
         </tbody>

@@ -24,11 +24,11 @@
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.date">Date</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.duree">Durée</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.motif">Motif</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.validation">Validation</span></th>
-                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.justification">Justification</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.date"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.duree"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.motif"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.validation"></span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.justification"></span></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -51,10 +51,10 @@
                         {% elif can_justify and r.is_pending %}
                             <form method="post" action="{% url 'vie_scolaire:retard_justify' r.id %}" class="flex items-center gap-2">
                                 {% csrf_token %}
-                                <input type="text" name="justification" maxlength="1000" placeholder="Motif…" required
+                                <input type="text" name="justification" maxlength="1000" data-i18n-attr="placeholder:vie_scolaire.ex_motif" required
                                        class="px-2 py-1 border border-slate-300 rounded-md text-xs">
                                 <button type="submit" class="px-3 py-1 bg-brand-600 text-white rounded-md text-xs font-medium hover:bg-brand-700">
-                                    <span data-i18n="vie_scolaire.justifier">Justifier</span>
+                                    <span data-i18n="vie_scolaire.justifier"></span>
                                 </button>
                             </form>
                         {% else %}
@@ -63,7 +63,7 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500"><span data-i18n="vie_scolaire.aucun_retard_enregistre">Aucun retard enregistré.</span></td></tr>
+                <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500"><span data-i18n="vie_scolaire.aucun_retard_enregistre"></span></td></tr>
             {% endfor %}
         </tbody>
     </table>

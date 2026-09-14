@@ -19,5 +19,7 @@
   "sauvegardee_s": "sauvegardée(s)",
   "seance": "Séance",
   "statut": "Statut",
-  "taux_de_presence": "Taux de présence"
+  "taux_de_presence": "Taux de présence",
+  "ex_motif": "Motif…",
+  "ex_motif_libre": "Motif libre…"
 }

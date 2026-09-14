@@ -7,9 +7,9 @@
     <header class="account-hero">
         <div class="hero-icon"><i class="fa-solid fa-user-plus"></i></div>
         <div>
-            <p class="eyebrow"><span data-i18n="users.administration_des_acces">Administration des accès</span></p>
-            <h1><span data-i18n="users.creer_une_personne">Créer une personne</span></h1>
-            <p><span data-i18n="users.remplissez_uniquement_ce_que_vous_savez_">Remplissez uniquement ce que vous savez. Les informations pourront être complétées plus tard.</span></p>
+            <p class="eyebrow"><span data-i18n="users.administration_des_acces"></span></p>
+            <h1><span data-i18n="users.creer_une_personne"></span></h1>
+            <p><span data-i18n="users.remplissez_uniquement_ce_que_vous_savez_"></span></p>
         </div>
         <button type="button" class="hero-button" @click="showCreate = !showCreate"><i class="fa-solid" :class="showCreate ? 'fa-xmark' : 'fa-plus'"></i> <span x-text="showCreate ? 'Fermer' : 'Nouveau compte'"></span></button>
     </header>
@@ -19,13 +19,13 @@
         <input type="hidden" name="action" value="create_account">
         <main class="account-form">
             <section class="form-card">
-                <div class="section-heading"><span class="step-number">1</span><div><h2><span data-i18n="users.identite">Identité</span></h2><p><span data-i18n="users.les_coordonnees_ne_sont_pas_obligatoires">Les coordonnées ne sont pas obligatoires.</span></p></div></div>
+                <div class="section-heading"><span class="step-number">1</span><div><h2><span data-i18n="users.identite"></span></h2><p><span data-i18n="users.les_coordonnees_ne_sont_pas_obligatoires"></span></p></div></div>
                 <div class="field-grid">
                     {% for field in form.visible_fields %}
                     {% if field.name == 'first_name' or field.name == 'last_name' or field.name == 'email' or field.name == 'phone' %}
                     <div class="field-wrap{% if field.name == 'email' or field.name == 'phone' %} optional-field{% endif %}">
                         <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
-                        {% if field.name == 'email' or field.name == 'phone' %}<small><span data-i18n="users.laissez_vide_si_non_connu">Laissez vide si non connu</span></small>{% endif %}
+                        {% if field.name == 'email' or field.name == 'phone' %}<small><span data-i18n="users.laissez_vide_si_non_connu"></span></small>{% endif %}
                         {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
                     </div>
                     {% endif %}
@@ -34,24 +34,24 @@
             </section>
 
             <section class="form-card">
-                <div class="section-heading"><span class="step-number">2</span><div><h2><span data-i18n="users.profil">Profil</span></h2><p><span data-i18n="users.le_role_adapte_automatiquement_les_optio">Le rôle adapte automatiquement les options suivantes.</span></p></div></div>
+                <div class="section-heading"><span class="step-number">2</span><div><h2><span data-i18n="users.profil"></span></h2><p><span data-i18n="users.le_role_adapte_automatiquement_les_optio"></span></p></div></div>
                 <div class="field-wrap role-field"><label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>{{ form.role }}</div>
-                <label class="active-toggle">{{ form.is_active }}<span><strong><span data-i18n="users.compte_actif">Compte actif</span></strong><small><span data-i18n="users.la_personne_pourra_se_connecter_immediat">La personne pourra se connecter immédiatement.</span></small></span></label>
+                <label class="active-toggle">{{ form.is_active }}<span><strong><span data-i18n="users.compte_actif"></span></strong><small><span data-i18n="users.la_personne_pourra_se_connecter_immediat"></span></small></span></label>
             </section>
 
             <section class="form-card linking-card">
-                <div class="section-heading"><span class="step-number">3</span><div><h2><span data-i18n="users.rattachements">Rattachements</span></h2><p><span data-i18n="users.facultatif_vous_pourrez_les_ajouter_plus">Facultatif : vous pourrez les ajouter plus tard.</span></p></div></div>
+                <div class="section-heading"><span class="step-number">3</span><div><h2><span data-i18n="users.rattachements"></span></h2><p><span data-i18n="users.facultatif_vous_pourrez_les_ajouter_plus"></span></p></div></div>
                 <div class="link-panel" x-show="role === 'STUDENT'" x-cloak><i class="fa-solid fa-school"></i><div><label for="{{ form.class_group.id_for_label }}">{{ form.class_group.label }}</label>{{ form.class_group }}</div></div>
                 <div class="link-panel" x-show="role === 'PARENT'" x-cloak><i class="fa-solid fa-children"></i><div><label for="{{ form.children.id_for_label }}">{{ form.children.label }}</label>{{ form.children }}</div></div>
                 <div class="link-panel" x-show="role === 'TEACHER'" x-cloak><i class="fa-solid fa-chalkboard-user"></i><div><label for="{{ form.teacher_classes.id_for_label }}">{{ form.teacher_classes.label }}</label>{{ form.teacher_classes }}</div></div>
             </section>
             {% if form.non_field_errors %}<div class="field-error">{{ form.non_field_errors }}</div>{% endif %}
-            <button type="submit" class="create-button"><i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="users.creer_le_compte">Créer le compte</span></button>
+            <button type="submit" class="create-button"><i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="users.creer_le_compte"></span></button>
         </main>
 
         <aside class="account-aside">
-            <div class="aside-card credential-card"><i class="fa-solid fa-key"></i><h2><span data-i18n="users.acces_automatique">Accès automatique</span></h2><p><span data-i18n="users.un_mot_de_passe_temporaire_est_genere_a_">Un mot de passe temporaire est généré à chaque nouvelle création.</span></p></div>
-            <div class="aside-card checklist-card"><h2><span data-i18n="users.tout_est_pret">Tout est prêt</span></h2><div><i class="fa-solid fa-circle-check"></i> <span data-i18n="users.profil_adapte_au_role">Profil adapté au rôle</span></div><div><i class="fa-solid fa-circle-check"></i> <span data-i18n="users.liens_avec_classes_ou_enfants">Liens avec classes ou enfants</span></div><div><i class="fa-solid fa-circle-check"></i> <span data-i18n="users.coordonnees_completables_plus_tard">Coordonnées complétables plus tard</span></div></div>
+            <div class="aside-card credential-card"><i class="fa-solid fa-key"></i><h2><span data-i18n="users.acces_automatique"></span></h2><p><span data-i18n="users.un_mot_de_passe_temporaire_est_genere_a_"></span></p></div>
+            <div class="aside-card checklist-card"><h2><span data-i18n="users.tout_est_pret"></span></h2><div><i class="fa-solid fa-circle-check"></i> <span data-i18n="users.profil_adapte_au_role"></span></div><div><i class="fa-solid fa-circle-check"></i> <span data-i18n="users.liens_avec_classes_ou_enfants"></span></div><div><i class="fa-solid fa-circle-check"></i> <span data-i18n="users.coordonnees_completables_plus_tard"></span></div></div>
         </aside>
     </form>
 </div>
@@ -59,40 +59,40 @@
 {% if can_edit_permissions %}
 <section class="permissions-section">
     <div class="permissions-header">
-        <div class="section-heading"><span class="step-number"><i class="fa-solid fa-shield-halved"></i></span><div><p class="eyebrow dark-eyebrow"><span data-i18n="users.controle_des_acces">Contrôle des accès</span></p><h2><span data-i18n="users.permissions_de_creation">Permissions de création</span></h2><p><span data-i18n="users.choisissez_qui_peut_creer_de_nouveaux_co">Choisissez qui peut créer de nouveaux comptes.</span></p></div></div>
-        <div class="permission-count"><i class="fa-solid fa-lock-open"></i> <span data-i18n="users.reserve_a_l_administrateur">Réservé à l'administrateur</span></div>
+        <div class="section-heading"><span class="step-number"><i class="fa-solid fa-shield-halved"></i></span><div><p class="eyebrow dark-eyebrow"><span data-i18n="users.controle_des_acces"></span></p><h2><span data-i18n="users.permissions_de_creation"></span></h2><p><span data-i18n="users.choisissez_qui_peut_creer_de_nouveaux_co"></span></p></div></div>
+        <div class="permission-count"><i class="fa-solid fa-lock-open"></i> <span data-i18n="users.reserve_a_l_administrateur"></span></div>
     </div>
     <form method="post" class="permissions-form">
         {% csrf_token %}
         <input type="hidden" name="action" value="save_permissions">
         <div class="permission-column">
-        <div class="column-title"><span><i class="fa-solid fa-user-check"></i> <span data-i18n="users.personnes">Personnes</span></span><small>{{ users|length }} personne{{ users|length|pluralize }}</small></div>
+        <div class="column-title"><span><i class="fa-solid fa-user-check"></i> <span data-i18n="users.personnes"></span></span><small>{{ users|length }} personne{{ users|length|pluralize }}</small></div>
         <div class="permission-list">
             {% for person in users %}
             <label class="permission-row">
                 <input type="checkbox" name="account_users" value="{{ person.pk }}"{% if account_permission in person.user_permissions.all %} checked{% endif %}>
                 <span class="permission-avatar"><i class="fa-solid fa-user"></i></span><span><strong>{{ person.get_full_name|default:person.email }}</strong><small>{{ person.get_role_display }}</small></span>
             </label>
-            {% empty %}<p><span data-i18n="users.aucune_autre_personne_n_est_encore_enreg">Aucune autre personne n'est encore enregistrée.</span></p>{% endfor %}
+            {% empty %}<p><span data-i18n="users.aucune_autre_personne_n_est_encore_enreg"></span></p>{% endfor %}
         </div>
         </div>
         <div class="permission-column" x-data="{ showGroupCreate: false }">
-        <div class="column-title"><span><i class="fa-solid fa-users-gear"></i> <span data-i18n="users.groupes">Groupes</span></span><button type="button" class="new-inline-button" @click="showGroupCreate = !showGroupCreate"><i class="fa-solid" :class="showGroupCreate ? 'fa-xmark' : 'fa-plus'"></i> <span x-text="showGroupCreate ? 'Fermer' : 'Nouveau groupe'"></span></button></div>
+        <div class="column-title"><span><i class="fa-solid fa-users-gear"></i> <span data-i18n="users.groupes"></span></span><button type="button" class="new-inline-button" @click="showGroupCreate = !showGroupCreate"><i class="fa-solid" :class="showGroupCreate ? 'fa-xmark' : 'fa-plus'"></i> <span x-text="showGroupCreate ? 'Fermer' : 'Nouveau groupe'"></span></button></div>
         <div class="group-create-panel" x-show="showGroupCreate" x-cloak>
             <div class="group-create-form">
-                <label for="group_name"><span data-i18n="users.nom_du_groupe">Nom du groupe</span></label><div><input id="group_name" name="group_name" maxlength="150" placeholder="Ex. Équipe pédagogique"><button type="submit" name="action" value="create_group" title="Créer le groupe"><i class="fa-solid fa-check"></i></button></div>
+                <label for="group_name"><span data-i18n="users.nom_du_groupe"></span></label><div><input id="group_name" name="group_name" maxlength="150" data-i18n-attr="placeholder:users.ex_nom_groupe"><button type="submit" name="action" value="create_group" data-i18n-attr="title:users.creer_le_groupe"><i class="fa-solid fa-check"></i></button></div>
             </div>
         </div>
         <div class="permission-list">
             {% for group in groups %}
             <label class="permission-row">
                 <input type="checkbox" name="account_groups" value="{{ group.pk }}"{% if account_permission in group.permissions.all %} checked{% endif %}>
-                <span class="permission-avatar group-avatar"><i class="fa-solid fa-users"></i></span><span><strong>{{ group.name }}</strong><small><span data-i18n="users.autoriser_la_creation_de_comptes">Autoriser la création de comptes</span></small></span>
+                <span class="permission-avatar group-avatar"><i class="fa-solid fa-users"></i></span><span><strong>{{ group.name }}</strong><small><span data-i18n="users.autoriser_la_creation_de_comptes"></span></small></span>
             </label>
-            {% empty %}<p><span data-i18n="users.aucun_groupe_django_n_est_encore_cree">Aucun groupe Django n'est encore créé.</span></p>{% endfor %}
+            {% empty %}<p><span data-i18n="users.aucun_groupe_django_n_est_encore_cree"></span></p>{% endfor %}
         </div>
         </div>
-        <button type="submit" class="save-permissions-button"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="users.enregistrer_les_permissions">Enregistrer les permissions</span></button>
+        <button type="submit" class="save-permissions-button"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="users.enregistrer_les_permissions"></span></button>
     </form>
 </section>
 {% endif %}

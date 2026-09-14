@@ -19,5 +19,7 @@
   "sauvegardee_s": "saved",
   "seance": "Session",
   "statut": "Status",
-  "taux_de_presence": "Attendance rate"
+  "taux_de_presence": "Attendance rate",
+  "ex_motif": "Reason…",
+  "ex_motif_libre": "Free-text reason…"
 }

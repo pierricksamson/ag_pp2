@@ -104,5 +104,14 @@
   "titre_de_l_evaluation": "Titre de l'évaluation",
   "toutes": "Toutes",
   "toutes_les_evaluations_que_vous_avez_cre": "Toutes les évaluations que vous avez créées.",
-  "trimestre": "Trimestre"
+  "trimestre": "Trimestre",
+  "ex_niveau": "6e, Seconde, L1...",
+  "ex_classe": "A, B, Groupe 1...",
+  "ex_code": "MATH",
+  "ex_nom_matiere": "Mathématiques",
+  "ex_nom_salle": "Salle 101",
+  "ex_emplacement": "Bâtiment A",
+  "ex_titre_evaluation": "Ex : Contrôle de maths — Chapitre 3",
+  "ex_appreciation": "Appréciation…",
+  "ex_titre": "Titre…"
 }

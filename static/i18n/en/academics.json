@@ -104,5 +104,14 @@
   "titre_de_l_evaluation": "Evaluation title",
   "toutes": "All",
   "toutes_les_evaluations_que_vous_avez_cre": "All the evaluations you have created.",
-  "trimestre": "Term"
+  "trimestre": "Term",
+  "ex_niveau": "6th grade, Sophomore, L1...",
+  "ex_classe": "A, B, Group 1...",
+  "ex_code": "MATH",
+  "ex_nom_matiere": "Mathematics",
+  "ex_nom_salle": "Room 101",
+  "ex_emplacement": "Building A",
+  "ex_titre_evaluation": "E.g.: Math test — Chapter 3",
+  "ex_appreciation": "Comment…",
+  "ex_titre": "Title…"
 }
