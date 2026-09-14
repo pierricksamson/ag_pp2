@@ -5,52 +5,52 @@
 {% block content %}
 <div class="card">
     <h2>Bienvenue, {{ user.get_full_name }}</h2>
-    <p>Vous etes connecte en tant qu'<strong>{{ user.get_role_display }}</strong>.</p>
+    <p><span data-i18n="users.vous_etes_connecte_en_tant_qu">Vous etes connecte en tant qu'</span><strong>{{ user.get_role_display }}</strong>.</p>
 </div>
 
 <div class="card">
-    <h2>Ma scolarite</h2>
+    <h2><span data-i18n="users.ma_scolarite">Ma scolarite</span></h2>
     {% if profile %}
         <table>
-            <tr><th>Numero etudiant</th><td>{{ profile.student_number }}</td></tr>
-            <tr><th>Date de naissance</th><td>{{ profile.birth_date|default:"-" }}</td></tr>
-            <tr><th>Classe</th><td>{{ profile.class_group|default:"Non affecte" }}</td></tr>
+            <tr><th><span data-i18n="users.numero_etudiant">Numero etudiant</span></th><td>{{ profile.student_number }}</td></tr>
+            <tr><th><span data-i18n="users.date_de_naissance">Date de naissance</span></th><td>{{ profile.birth_date|default:"-" }}</td></tr>
+            <tr><th><span data-i18n="users.classe">Classe</span></th><td>{{ profile.class_group|default:"Non affecte" }}</td></tr>
         </table>
     {% else %}
-        <p>Aucun profil eleve associe a ce compte.</p>
+        <p><span data-i18n="users.aucun_profil_eleve_associe_a_ce_compte">Aucun profil eleve associe a ce compte.</span></p>
     {% endif %}
 </div>
 <div class="card">
-    <h2>Vie scolaire</h2>
+    <h2><span data-i18n="users.vie_scolaire">Vie scolaire</span></h2>
     {% if vie_scolaire_stats %}
         <div class="stats">
             <div class="stat">
                 <div class="value">{{ vie_scolaire_stats.absences }}</div>
-                <div class="label">Absences</div>
+                <div class="label"><span data-i18n="users.absences">Absences</span></div>
             </div>
             <div class="stat">
                 <div class="value">{{ vie_scolaire_stats.absences_non_justifiees }}</div>
-                <div class="label">Non justifiées</div>
+                <div class="label"><span data-i18n="users.non_justifiees">Non justifiées</span></div>
             </div>
             <div class="stat">
                 <div class="value">{{ vie_scolaire_stats.retards }}</div>
-                <div class="label">Retards</div>
+                <div class="label"><span data-i18n="users.retards">Retards</span></div>
             </div>
             <div class="stat">
                 <div class="value">{{ vie_scolaire_stats.retards_en_attente }}</div>
-                <div class="label">En attente</div>
+                <div class="label"><span data-i18n="users.en_attente">En attente</span></div>
             </div>
         </div>
     {% else %}
-        <p>Aucune donnée disponible.</p>
+        <p><span data-i18n="users.aucune_donnee_disponible">Aucune donnée disponible.</span></p>
     {% endif %}
 </div>
 <div class="card">
-    <h2>Mes parents</h2>
+    <h2><span data-i18n="users.mes_parents">Mes parents</span></h2>
     {% if parents %}
         <table>
             <thead>
-                <tr><th>Nom</th><th>Email</th><th>Lien</th></tr>
+                <tr><th><span data-i18n="users.nom">Nom</span></th><th><span data-i18n="users.email">Email</span></th><th><span data-i18n="users.lien">Lien</span></th></tr>
             </thead>
             <tbody>
                 {% for p in parents %}
@@ -63,7 +63,7 @@
             </tbody>
         </table>
     {% else %}
-        <p>Aucun parent n'est rattache a votre dossier.</p>
+        <p><span data-i18n="users.aucun_parent_n_est_rattache_a_votre_doss">Aucun parent n'est rattache a votre dossier.</span></p>
     {% endif %}
 </div>
 {% endblock %}

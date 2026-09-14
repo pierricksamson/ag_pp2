@@ -1,0 +1,19 @@
+{
+  "brand.tagline": "Espace scolaire",
+  "nav.logout": "Déconnexion",
+  "nav.dashboard": "Tableau de bord",
+  "nav.schedule": "Emploi du temps",
+  "nav.evaluations": "Évaluations",
+  "nav.evaluation_new": "Nouvelle évaluation",
+  "nav.retards": "Retards",
+  "nav.messaging": "Messagerie",
+  "nav.drive": "Drive",
+  "nav.chat": "Chat",
+  "nav.grades": "Mes notes",
+  "nav.grades_children": "Notes de mes enfants",
+  "nav.absences": "Mes absences",
+  "nav.absences_children": "Absences de mes enfants",
+  "nav.retards_mine": "Mes retards",
+  "nav.retards_children": "Retards de mes enfants",
+  "lang.selector_label": "Langue"
+}

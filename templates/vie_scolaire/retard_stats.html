@@ -6,45 +6,45 @@
 <div class="mb-6 flex items-center justify-between">
     <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
         <i class="fa-solid fa-chart-column text-brand-600"></i>
-        Retards — Statistiques
+        <span data-i18n="vie_scolaire.retards_statistiques">Retards — Statistiques</span>
     </h1>
     <a href="{% url 'vie_scolaire:retard_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600">
-        <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à l'historique
+        <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="vie_scolaire.retour_a_l_historique">Retour à l'historique</span>
     </a>
 </div>
 
 <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
     <div class="bg-white rounded-2xl card-shadow p-4 text-center">
         <div class="text-2xl font-bold text-slate-900">{{ total }}</div>
-        <div class="text-xs text-slate-500 mt-1">Total</div>
+        <div class="text-xs text-slate-500 mt-1"><span data-i18n="vie_scolaire.total">Total</span></div>
     </div>
     <div class="bg-white rounded-2xl card-shadow p-4 text-center">
         <div class="text-2xl font-bold text-amber-600">{{ pending }}</div>
-        <div class="text-xs text-slate-500 mt-1">En attente</div>
+        <div class="text-xs text-slate-500 mt-1"><span data-i18n="vie_scolaire.en_attente">En attente</span></div>
     </div>
     <div class="bg-white rounded-2xl card-shadow p-4 text-center">
         <div class="text-2xl font-bold text-emerald-600">{{ justified }}</div>
-        <div class="text-xs text-slate-500 mt-1">Justifiés</div>
+        <div class="text-xs text-slate-500 mt-1"><span data-i18n="vie_scolaire.justifies">Justifiés</span></div>
     </div>
     <div class="bg-white rounded-2xl card-shadow p-4 text-center">
         <div class="text-2xl font-bold text-rose-600">{{ unjustified }}</div>
-        <div class="text-xs text-slate-500 mt-1">Non justifiés</div>
+        <div class="text-xs text-slate-500 mt-1"><span data-i18n="vie_scolaire.non_justifies">Non justifiés</span></div>
     </div>
     <div class="bg-white rounded-2xl card-shadow p-4 text-center">
         <div class="text-2xl font-bold text-slate-900">{{ avg_duration }} min</div>
-        <div class="text-xs text-slate-500 mt-1">Durée moyenne</div>
+        <div class="text-xs text-slate-500 mt-1"><span data-i18n="vie_scolaire.duree_moyenne">Durée moyenne</span></div>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white rounded-2xl card-shadow overflow-hidden">
-        <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm">Par classe</div>
+        <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm"><span data-i18n="vie_scolaire.par_classe">Par classe</span></div>
         <table class="w-full text-sm">
             <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                 <tr>
-                    <th class="text-left px-6 py-2">Classe</th>
-                    <th class="text-left px-6 py-2">Nb retards</th>
-                    <th class="text-left px-6 py-2">Durée moy.</th>
+                    <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.classe">Classe</span></th>
+                    <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.nb_retards">Nb retards</span></th>
+                    <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.duree_moy">Durée moy.</span></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -55,19 +55,19 @@
                         <td class="px-6 py-2">{{ row.avg_duration|floatformat:1 }} min</td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="3" class="px-6 py-6 text-center text-slate-500">Aucune donnée.</td></tr>
+                    <tr><td colspan="3" class="px-6 py-6 text-center text-slate-500"><span data-i18n="vie_scolaire.aucune_donnee">Aucune donnée.</span></td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
     <div class="bg-white rounded-2xl card-shadow overflow-hidden">
-        <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm">Par motif</div>
+        <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm"><span data-i18n="vie_scolaire.par_motif">Par motif</span></div>
         <table class="w-full text-sm">
             <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                 <tr>
-                    <th class="text-left px-6 py-2">Motif</th>
-                    <th class="text-left px-6 py-2">Nb retards</th>
+                    <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.motif">Motif</span></th>
+                    <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.nb_retards">Nb retards</span></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -77,7 +77,7 @@
                         <td class="px-6 py-2">{{ row.count }}</td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="2" class="px-6 py-6 text-center text-slate-500">Aucune donnée.</td></tr>
+                    <tr><td colspan="2" class="px-6 py-6 text-center text-slate-500"><span data-i18n="vie_scolaire.aucune_donnee">Aucune donnée.</span></td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -85,12 +85,12 @@
 </div>
 
 <div class="bg-white rounded-2xl card-shadow overflow-hidden mt-6">
-    <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm">Élèves les plus concernés</div>
+    <div class="px-6 py-3 border-b border-slate-100 font-semibold text-slate-700 text-sm"><span data-i18n="vie_scolaire.eleves_les_plus_concernes">Élèves les plus concernés</span></div>
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-                <th class="text-left px-6 py-2">Élève</th>
-                <th class="text-left px-6 py-2">Nb retards</th>
+                <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.eleve">Élève</span></th>
+                <th class="text-left px-6 py-2"><span data-i18n="vie_scolaire.nb_retards">Nb retards</span></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -100,7 +100,7 @@
                     <td class="px-6 py-2">{{ row.count }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="2" class="px-6 py-6 text-center text-slate-500">Aucune donnée.</td></tr>
+                <tr><td colspan="2" class="px-6 py-6 text-center text-slate-500"><span data-i18n="vie_scolaire.aucune_donnee">Aucune donnée.</span></td></tr>
             {% endfor %}
         </tbody>
     </table>

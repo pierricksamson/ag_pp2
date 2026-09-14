@@ -5,36 +5,36 @@
 {% block content %}
 <div class="card">
     <h2>Bienvenue, {{ user.get_full_name }}</h2>
-    <p>Vous etes connecte en tant que <strong>{{ user.get_role_display }}</strong>.</p>
+    <p><span data-i18n="users.vous_etes_connecte_en_tant_que">Vous etes connecte en tant que</span> <strong>{{ user.get_role_display }}</strong>.</p>
 </div>
 
 <div class="card">
-    <h2>Mon profil</h2>
+    <h2><span data-i18n="users.mon_profil">Mon profil</span></h2>
     {% if profile %}
         <table>
-            <tr><th>Matricule</th><td>{{ profile.employee_number|default:"-" }}</td></tr>
-            <tr><th>Date d'embauche</th><td>{{ profile.hire_date|default:"-" }}</td></tr>
+            <tr><th><span data-i18n="users.matricule">Matricule</span></th><td>{{ profile.employee_number|default:"-" }}</td></tr>
+            <tr><th><span data-i18n="users.date_d_embauche">Date d'embauche</span></th><td>{{ profile.hire_date|default:"-" }}</td></tr>
             <tr>
-                <th>Matieres enseignees</th>
+                <th><span data-i18n="users.matieres_enseignees">Matieres enseignees</span></th>
                 <td>
                     {% if subjects %}
                         {% for s in subjects %}<span class="role" style="background:#eef2ff;color:#3730a3;padding:3px 10px;border-radius:999px;margin-right:4px;">{{ s }}</span>{% endfor %}
                     {% else %}
-                        <em>Aucune matiere assignee pour le moment.</em>
+                        <em><span data-i18n="users.aucune_matiere_assignee_pour_le_moment">Aucune matiere assignee pour le moment.</span></em>
                     {% endif %}
                 </td>
             </tr>
         </table>
     {% else %}
-        <p>Aucun profil professeur associe a ce compte.</p>
+        <p><span data-i18n="users.aucun_profil_professeur_associe_a_ce_com">Aucun profil professeur associe a ce compte.</span></p>
     {% endif %}
 </div>
 <div class="card">
-    <h2>Notes à saisir</h2>
+    <h2><span data-i18n="users.notes_a_saisir">Notes à saisir</span></h2>
     {% if pending_evaluations %}
         <table>
             <thead>
-                <tr><th>Évaluation</th><th>Classe</th><th>Manquantes</th><th></th></tr>
+                <tr><th><span data-i18n="users.evaluation">Évaluation</span></th><th><span data-i18n="users.classe">Classe</span></th><th><span data-i18n="users.manquantes">Manquantes</span></th><th></th></tr>
             </thead>
             <tbody>
                 {% for row in pending_evaluations %}
@@ -42,13 +42,13 @@
                         <td>{{ row.evaluation.title }}</td>
                         <td>{{ row.evaluation.class_group }}</td>
                         <td>{{ row.missing }}</td>
-                        <td><a href="{% url 'academics:evaluation_entry' row.evaluation.id %}">Saisir</a></td>
+                        <td><a href="{% url 'academics:evaluation_entry' row.evaluation.id %}"><span data-i18n="users.saisir">Saisir</span></a></td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>Toutes les notes sont saisies.</p>
+        <p><span data-i18n="users.toutes_les_notes_sont_saisies">Toutes les notes sont saisies.</span></p>
     {% endif %}
 </div>
 {% endblock %}

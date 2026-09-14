@@ -13,7 +13,7 @@
 
     <div class="mb-6">
         <a href="{% url 'academics:evaluation_list' %}" class="inline-flex items-center text-sm text-slate-500 hover:text-brand-600 mb-2">
-            <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour à la liste
+            <i class="fa-solid fa-arrow-left mr-1.5"></i><span data-i18n="academics.retour_a_la_liste">Retour à la liste</span>
         </a>
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -36,36 +36,36 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-2xl card-shadow p-5">
             <div class="flex items-center justify-between">
-                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Moyenne de classe</div>
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="academics.moyenne_de_classe">Moyenne de classe</span></div>
                 <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></span>
             </div>
             <div class="text-3xl font-extrabold text-brand-600 mt-2" x-text="formatAverage(stats.average) + (stats.average !== null ? '/{{ evaluation.scale_max }}' : '')"></div>
         </div>
         <div class="bg-white rounded-2xl card-shadow p-5">
             <div class="flex items-center justify-between">
-                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Note min</div>
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="academics.note_min">Note min</span></div>
                 <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-arrow-down"></i></span>
             </div>
             <div class="text-3xl font-extrabold text-slate-700 mt-2" x-text="stats.min !== null ? stats.min.toFixed(2) : '—'"></div>
         </div>
         <div class="bg-white rounded-2xl card-shadow p-5">
             <div class="flex items-center justify-between">
-                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Note max</div>
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="academics.note_max">Note max</span></div>
                 <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-arrow-up"></i></span>
             </div>
             <div class="text-3xl font-extrabold text-slate-700 mt-2" x-text="stats.max !== null ? stats.max.toFixed(2) : '—'"></div>
         </div>
         <div class="bg-white rounded-2xl card-shadow p-5">
             <div class="flex items-center justify-between">
-                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Taux de présence</div>
+                <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold"><span data-i18n="academics.taux_de_presence">Taux de présence</span></div>
                 <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-user-check"></i></span>
             </div>
             <div class="text-3xl font-extrabold text-emerald-600 mt-2">
                 <span x-text="stats.total ? stats.attendance_rate + '%' : '—'">{% if stats.total %}{{ stats.attendance_rate }}%{% else %}—{% endif %}</span>
             </div>
             <div class="text-xs text-slate-500 mt-1">
-                <span x-text="stats.present">{% if stats.present is not None %}{{ stats.present }}{% endif %}</span> présent(s) /
-                <span x-text="stats.total">{% if stats.total is not None %}{{ stats.total }}{% endif %}</span> élève(s)
+                <span x-text="stats.present">{% if stats.present is not None %}{{ stats.present }}{% endif %}</span> <span data-i18n="academics.present_s">présent(s) /</span>
+                <span x-text="stats.total">{% if stats.total is not None %}{{ stats.total }}{% endif %}</span> <span data-i18n="academics.eleve_s">élève(s)</span>
             </div>
         </div>
     </div>
@@ -76,18 +76,18 @@
         <div class="bg-white rounded-2xl card-shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 class="font-semibold text-slate-900">Saisie rapide</h2>
+                    <h2 class="font-semibold text-slate-900"><span data-i18n="academics.saisie_rapide">Saisie rapide</span></h2>
                     <p class="text-xs text-slate-500">
-                        Tapez la note puis <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Entrée</kbd> ou <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Tab</kbd> pour passer à l'élève suivant.
-                        Raccourcis : <kbd class="px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-mono">ABS</kbd> = absent ·
-                        <kbd class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-mono">DISP</kbd> = dispensé ·
-                        <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono">NR</kbd> = non rendu.
+                        <span data-i18n="academics.tapez_la_note_puis">Tapez la note puis</span> <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono"><span data-i18n="academics.entree">Entrée</span></kbd> <span data-i18n="academics.ou">ou</span> <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono"><span data-i18n="academics.tab">Tab</span></kbd> <span data-i18n="academics.pour_passer_a_l_eleve_suivant_raccourcis">pour passer à l'élève suivant.
+                        Raccourcis :</span> <kbd class="px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[10px] font-mono"><span data-i18n="academics.abs">ABS</span></kbd> <span data-i18n="academics.absent">= absent ·</span>
+                        <kbd class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-mono"><span data-i18n="academics.disp">DISP</span></kbd> <span data-i18n="academics.dispense">= dispensé ·</span>
+                        <kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono"><span data-i18n="academics.nr">NR</span></kbd> <span data-i18n="academics.non_rendu">= non rendu.</span>
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
                     <label class="inline-flex items-center gap-2 text-xs text-slate-600">
                         <input type="checkbox" x-model="autosave" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
-                        Sauvegarde automatique
+                        <span data-i18n="academics.sauvegarde_automatique">Sauvegarde automatique</span>
                     </label>
                     <span class="text-xs px-2.5 py-1 rounded-full"
                           :class="saveBadge.class"
@@ -103,11 +103,11 @@
                     <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 sticky top-0 z-10">
                         <tr>
                             <th class="text-left px-6 py-3 w-10">#</th>
-                            <th class="text-left px-6 py-3">Élève</th>
+                            <th class="text-left px-6 py-3"><span data-i18n="academics.eleve">Élève</span></th>
                             <th class="text-left px-6 py-3 w-32">Note / {{ evaluation.scale_max }}</th>
-                            <th class="text-left px-6 py-3 w-40">Statut</th>
-                            <th class="text-left px-6 py-3">Commentaire</th>
-                            <th class="text-left px-6 py-3 w-24">État</th>
+                            <th class="text-left px-6 py-3 w-40"><span data-i18n="academics.statut">Statut</span></th>
+                            <th class="text-left px-6 py-3"><span data-i18n="academics.commentaire">Commentaire</span></th>
+                            <th class="text-left px-6 py-3 w-24"><span data-i18n="academics.etat">État</span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -175,7 +175,7 @@
                         {% empty %}
                             <tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">
                                 <i class="fa-solid fa-inbox text-3xl text-slate-300 mb-3 block"></i>
-                                Aucun élève dans cette classe.
+                                <span data-i18n="academics.aucun_eleve_dans_cette_classe">Aucun élève dans cette classe.</span>
                             </td></tr>
                         {% endfor %}
                     </tbody>
@@ -189,22 +189,22 @@
                 <div class="text-xs text-slate-500 flex items-center gap-2">
                     <i class="fa-solid fa-keyboard"></i>
                     <span>
-                        Saisies modifiées :
+                        <span data-i18n="academics.saisies_modifiees">Saisies modifiées :</span>
                         <span class="font-semibold text-slate-700" x-text="dirtyCount">0</span>
                     </span>
                     <span class="hidden sm:inline">·</span>
                     <span class="hidden sm:inline">
-                        <span x-text="savedCount">0</span> sauvegarde(s) effectuée(s)
+                        <span x-text="savedCount">0</span> <span data-i18n="academics.sauvegarde_s_effectuee_s">sauvegarde(s) effectuée(s)</span>
                     </span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" @click="resetAll()" class="inline-flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-sm font-medium">
-                        <i class="fa-solid fa-rotate-left"></i> Réinitialiser
+                        <i class="fa-solid fa-rotate-left"></i> <span data-i18n="academics.reinitialiser">Réinitialiser</span>
                     </button>
                     <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span x-text="savingAll ? 'Sauvegarde…' : 'Sauvegarder toutes les notes'">
-                            Sauvegarder toutes les notes
+                            <span data-i18n="academics.sauvegarder_toutes_les_notes">Sauvegarder toutes les notes</span>
                         </span>
                     </button>
                 </div>

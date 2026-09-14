@@ -24,11 +24,11 @@
     <table class="w-full text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-                <th class="text-left px-6 py-3">Date</th>
-                <th class="text-left px-6 py-3">Durée</th>
-                <th class="text-left px-6 py-3">Motif</th>
-                <th class="text-left px-6 py-3">Validation</th>
-                <th class="text-left px-6 py-3">Justification</th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.date">Date</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.duree">Durée</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.motif">Motif</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.validation">Validation</span></th>
+                <th class="text-left px-6 py-3"><span data-i18n="vie_scolaire.justification">Justification</span></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
@@ -54,7 +54,7 @@
                                 <input type="text" name="justification" maxlength="1000" placeholder="Motif…" required
                                        class="px-2 py-1 border border-slate-300 rounded-md text-xs">
                                 <button type="submit" class="px-3 py-1 bg-brand-600 text-white rounded-md text-xs font-medium hover:bg-brand-700">
-                                    Justifier
+                                    <span data-i18n="vie_scolaire.justifier">Justifier</span>
                                 </button>
                             </form>
                         {% else %}
@@ -63,7 +63,7 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">Aucun retard enregistré.</td></tr>
+                <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500"><span data-i18n="vie_scolaire.aucun_retard_enregistre">Aucun retard enregistré.</span></td></tr>
             {% endfor %}
         </tbody>
     </table>
