@@ -5,35 +5,35 @@
 {% block content %}
 <div class="card">
     <h2>Bienvenue, {{ user.get_full_name }}</h2>
-    <p>Vous etes connecte en tant qu'<strong>{{ user.get_role_display }}</strong>.</p>
+    <p><span data-i18n="users.vous_etes_connecte_en_tant_qu"></span><strong>{{ user.get_role_display }}</strong>.</p>
 </div>
 
 <div class="card">
-    <h2>Apercu de l'etablissement</h2>
+    <h2><span data-i18n="users.apercu_de_l_etablissement"></span></h2>
     <div class="stats">
         <div class="stat">
             <div class="value">{{ stats.eleves }}</div>
-            <div class="label">Eleves inscrits</div>
+            <div class="label"><span data-i18n="users.eleves_inscrits"></span></div>
         </div>
         <div class="stat">
             <div class="value">{{ stats.profs }}</div>
-            <div class="label">Professeurs</div>
+            <div class="label"><span data-i18n="users.professeurs"></span></div>
         </div>
         <div class="stat">
             <div class="value">{{ stats.parents }}</div>
-            <div class="label">Parents</div>
+            <div class="label"><span data-i18n="users.parents"></span></div>
         </div>
     </div>
 </div>
 
 <div class="card">
-    <h2>Administration</h2>
-    <p>Créez les comptes de l'établissement et choisissez qui peut ensuite créer des comptes.</p>
+    <h2><span data-i18n="users.administration"></span></h2>
+    <p><span data-i18n="users.creez_les_comptes_de_l_etablissement_et_"></span></p>
     {% if user.is_superuser %}
-    <a href="{% url 'users:account_management' %}" class="btn">Gérer les comptes</a>
-    <a href="{% url 'academics:establishment_management' %}" class="btn">Gérer l'établissement</a>
+    <a href="{% url 'users:account_management' %}" class="btn"><span data-i18n="users.gerer_les_comptes"></span></a>
+    <a href="{% url 'academics:establishment_management' %}" class="btn"><span data-i18n="users.gerer_l_etablissement"></span></a>
     {% endif %}
-    <p class="mt-3">Pour les réglages techniques avancés, utilisez la console Django.</p>
-    <a href="{{ admin_url }}" class="btn">Ouvrir la console admin</a>
+    <p class="mt-3"><span data-i18n="users.pour_les_reglages_techniques_avances_uti"></span></p>
+    <a href="{{ admin_url }}" class="btn"><span data-i18n="users.ouvrir_la_console_admin"></span></a>
 </div>
 {% endblock %}

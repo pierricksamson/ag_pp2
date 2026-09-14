@@ -1,0 +1,23 @@
+{
+  "actuellement_a_l_infirmerie": "Currently at the infirmary",
+  "arrivee": "Arrival",
+  "aucun_passage_aujourd_hui": "No visit today.",
+  "aucun_passage_enregistre": "No visit recorded.",
+  "cloturer": "Close",
+  "eleve": "Student",
+  "en_cours": "Ongoing",
+  "enregistrer_l_arrivee": "Record arrival",
+  "infirmerie": "Infirmary",
+  "motif": "Reason",
+  "nouveau_passage": "New visit",
+  "parents_prevenus": "Parents notified",
+  "passages_aujourd_hui": "Today's visits",
+  "personne_actuellement_a_l_infirmerie": "No one is currently at the infirmary.",
+  "precision": "Details",
+  "retour_a_l_infirmerie": "Back to the infirmary",
+  "soins": "Care given",
+  "soins_prodigues": "Care given",
+  "sortie": "Departure",
+  "suite": "Follow-up",
+  "suite_donnee": "Follow-up given"
+}

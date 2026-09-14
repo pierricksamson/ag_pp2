@@ -7,8 +7,8 @@
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white font-bold text-2xl mb-4">A</div>
-            <h1 class="text-2xl font-bold text-slate-900">EduManager</h1>
-            <p class="mt-2 text-slate-500 text-sm">Connectez-vous avec votre adresse email</p>
+            <h1 class="text-2xl font-bold text-slate-900"><span data-i18n="users.edumanager"></span></h1>
+            <p class="mt-2 text-slate-500 text-sm"><span data-i18n="users.connectez_vous_avec_votre_adresse_email"></span></p>
         </div>
 
         <div class="bg-white rounded-2xl card-shadow p-8 border border-slate-100">
@@ -16,7 +16,7 @@
                 <div class="mb-6 p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-sm">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
-                        <span>Identifiants incorrects. Veuillez réessayer.</span>
+                        <span><span data-i18n="users.identifiants_incorrects_veuillez_reessay"></span></span>
                     </div>
                 </div>
             {% endif %}
@@ -24,7 +24,7 @@
             <form method="post" action="{% url 'users:login' %}" class="space-y-5">
                 {% csrf_token %}
                 <div>
-                    <label for="id_username" class="block text-sm font-medium text-slate-700 mb-1.5">Adresse email</label>
+                    <label for="id_username" class="block text-sm font-medium text-slate-700 mb-1.5"><span data-i18n="users.adresse_email"></span></label>
                     <input type="email" name="username" id="id_username" autofocus required
                            value="{{ form.username.value|default:'' }}"
                            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-slate-900 placeholder-slate-400 text-sm
@@ -34,10 +34,10 @@
 
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
-                        <label for="id_password" class="block text-sm font-medium text-slate-700">Mot de passe</label>
+                        <label for="id_password" class="block text-sm font-medium text-slate-700"><span data-i18n="users.mot_de_passe"></span></label>
                         <a href="#" onclick="alert('Fonctionnalité non disponible pour le moment.'); return false;"
                            class="text-sm text-slate-500 hover:text-brand-600 transition-colors">
-                            Mot de passe oublié ?
+                            <span data-i18n="users.mot_de_passe_oublie"></span>
                         </a>
                     </div>
                     <div class="relative">
@@ -57,7 +57,7 @@
                         class="w-full py-2.5 px-4 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm
                                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2
                                transition-colors duration-200 shadow-sm">
-                    Se connecter
+                    <span data-i18n="users.se_connecter"></span>
                 </button>
             </form>
         </div>
