@@ -1,0 +1,22 @@
+{
+  "action": "Action",
+  "aucun_fichier_pour_le_moment": "Aucun fichier pour le moment.",
+  "definissez_l_espace_de_stockage_en_mo_au": "Définissez l'espace de stockage (en Mo) autorisé pour chaque rôle.",
+  "depose_le": "Déposé le",
+  "depose_par": "Déposé par",
+  "enregistrer_les_quotas": "Enregistrer les quotas",
+  "envoyer_un_pdf": "Envoyer un PDF",
+  "espace_utilise": "Espace utilisé",
+  "fichier": "Fichier",
+  "fichiers_pdf_uniquement": "Fichiers PDF uniquement.",
+  "les_fichiers_deposes_ici_comptent_dans_v": "Les fichiers déposés ici comptent dans votre propre quota.",
+  "mo": "Mo",
+  "mon_drive": "Mon Drive",
+  "quotas_du_drive": "Quotas du Drive",
+  "retour_a_mon_drive": "Retour à mon Drive",
+  "retour_au_tableau_de_bord": "Retour au tableau de bord",
+  "supprimer": "Supprimer",
+  "taille": "Taille",
+  "valeur_par_defaut": "(valeur par défaut)",
+  "votre_espace_personnel_utilise": "Votre espace personnel utilisé"
+}

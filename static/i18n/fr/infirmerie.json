@@ -1,0 +1,23 @@
+{
+  "actuellement_a_l_infirmerie": "Actuellement à l'infirmerie",
+  "arrivee": "Arrivée",
+  "aucun_passage_aujourd_hui": "Aucun passage aujourd'hui.",
+  "aucun_passage_enregistre": "Aucun passage enregistré.",
+  "cloturer": "Clôturer",
+  "eleve": "Élève",
+  "en_cours": "En cours",
+  "enregistrer_l_arrivee": "Enregistrer l'arrivée",
+  "infirmerie": "Infirmerie",
+  "motif": "Motif",
+  "nouveau_passage": "Nouveau passage",
+  "parents_prevenus": "Parents prévenus",
+  "passages_aujourd_hui": "Passages aujourd'hui",
+  "personne_actuellement_a_l_infirmerie": "Personne actuellement à l'infirmerie.",
+  "precision": "Précision",
+  "retour_a_l_infirmerie": "Retour à l'infirmerie",
+  "soins": "Soins",
+  "soins_prodigues": "Soins prodigués",
+  "sortie": "Sortie",
+  "suite": "Suite",
+  "suite_donnee": "Suite donnée"
+}

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -39,6 +40,9 @@
     {# Alpine.js pour accordéons et interactions légères #}
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+    {# Drapeaux pour le sélecteur de langue : https://github.com/lipis/flag-icons #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/css/flag-icons.min.css">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -48,6 +52,8 @@
       /* Smooth focus rings */
       input:focus, select:focus, textarea:focus, button:focus { outline: none; }
     </style>
+
+    <script data-static-base="{% static '' %}" src="{% static 'js/i18n.js' %}" defer></script>
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -60,12 +66,34 @@
           <a href="{% url 'users:role_redirect' %}" class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold">A</div>
             <span class="font-bold text-slate-900 text-lg tracking-tight">Ademi</span>
-            <span class="hidden sm:inline-block text-xs uppercase tracking-wider text-slate-400 ml-1 px-2 py-0.5 bg-slate-100 rounded">Espace scolaire</span>
+            <span data-i18n="brand.tagline" class="hidden sm:inline-block text-xs uppercase tracking-wider text-slate-400 ml-1 px-2 py-0.5 bg-slate-100 rounded"></span>
           </a>
         </div>
 
         <div class="flex items-center gap-3">
           {% block nav_extra %}{% endblock %}
+
+          {# Sélecteur de langue (fr/en) - persisté en localStorage via i18n.js #}
+          <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" @click.outside="open = false" type="button"
+                    class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm">
+              <span data-lang-flag="fr" class="fi fi-fr rounded-sm"></span>
+              <span data-lang-flag="en" class="fi fi-gb rounded-sm hidden"></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+            <div x-show="open" x-cloak
+                 class="absolute right-0 mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-card z-40 overflow-hidden">
+              <button type="button" onclick="AdemiI18n.setLang('fr')"
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50">
+                <span class="fi fi-fr rounded-sm"></span> Français
+              </button>
+              <button type="button" onclick="AdemiI18n.setLang('en')"
+                      class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50">
+                <span class="fi fi-gb rounded-sm"></span> English
+              </button>
+            </div>
+          </div>
+
           {% if user.is_authenticated %}
             <div class="hidden sm:flex items-center gap-2 text-sm">
               <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
@@ -77,7 +105,7 @@
               </div>
             </div>
             <a href="{% url 'users:logout' %}" class="text-sm text-slate-500 hover:text-rose-600 flex items-center gap-1.5">
-              <i class="fa-solid fa-right-from-bracket"></i><span class="hidden sm:inline">Déconnexion</span>
+              <i class="fa-solid fa-right-from-bracket"></i><span data-i18n="nav.logout" class="hidden sm:inline"></span>
             </a>
           {% endif %}
         </div>
@@ -89,85 +117,85 @@
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap gap-1 text-sm">
             {% if user.is_teacher %}
               <a href="{% url 'users:dashboard_teacher' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'users' and 'teacher' in request.resolver_match.url_name %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
+                <i class="fa-solid fa-gauge mr-1.5"></i><span data-i18n="nav.dashboard"></span>
               </a>
               <a href="{% url 'schedule:weekly' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'schedule' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-calendar-week mr-1.5"></i>Emploi du temps
+                <i class="fa-solid fa-calendar-week mr-1.5"></i><span data-i18n="nav.schedule"></span>
               </a>
               <a href="{% url 'academics:evaluation_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'academics' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-clipboard-check mr-1.5"></i>Évaluations
+                <i class="fa-solid fa-clipboard-check mr-1.5"></i><span data-i18n="nav.evaluations"></span>
               </a>
               <a href="{% url 'academics:evaluation_create' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
-                <i class="fa-solid fa-plus mr-1.5"></i>Nouvelle évaluation
+                <i class="fa-solid fa-plus mr-1.5"></i><span data-i18n="nav.evaluation_new"></span>
               </a>
               <a href="{% url 'vie_scolaire:retard_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'vie_scolaire' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-clock mr-1.5"></i>Retards
+                <i class="fa-solid fa-clock mr-1.5"></i><span data-i18n="nav.retards"></span>
               </a>
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                <i class="fa-solid fa-envelope mr-1.5"></i><span data-i18n="nav.messaging"></span>
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
               <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+                <i class="fa-solid fa-folder-open mr-1.5"></i><span data-i18n="nav.drive"></span>
               </a>
               <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
-                <i class="fa-solid fa-comments mr-1.5"></i>Chat
+                <i class="fa-solid fa-comments mr-1.5"></i><span data-i18n="nav.chat"></span>
               </a>
             {% elif user.is_student %}
               <a href="{% url 'users:dashboard_student' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_student' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
+                <i class="fa-solid fa-gauge mr-1.5"></i><span data-i18n="nav.dashboard"></span>
               </a>
               <a href="{% url 'schedule:weekly' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'schedule' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-calendar-week mr-1.5"></i>Emploi du temps
+                <i class="fa-solid fa-calendar-week mr-1.5"></i><span data-i18n="nav.schedule"></span>
               </a>
               <a href="{% url 'academics:grades' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'grades' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-chart-line mr-1.5"></i>Mes notes
+                <i class="fa-solid fa-chart-line mr-1.5"></i><span data-i18n="nav.grades"></span>
               </a>
               {% if user.student_profile %}
               <a href="{% url 'attendance:student_absences' user.student_profile.id %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'attendance' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-user-clock mr-1.5"></i>Mes absences
+                <i class="fa-solid fa-user-clock mr-1.5"></i><span data-i18n="nav.absences"></span>
               </a>
               <a href="{% url 'vie_scolaire:student_retards' user.student_profile.id %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'vie_scolaire' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-clock mr-1.5"></i>Mes retards
+                <i class="fa-solid fa-clock mr-1.5"></i><span data-i18n="nav.retards_mine"></span>
               </a>
               {% endif %}
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                <i class="fa-solid fa-envelope mr-1.5"></i><span data-i18n="nav.messaging"></span>
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
               <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+                <i class="fa-solid fa-folder-open mr-1.5"></i><span data-i18n="nav.drive"></span>
               </a>
             {% elif user.is_parent %}
               <a href="{% url 'users:dashboard_parent' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'dashboard_parent' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
+                <i class="fa-solid fa-gauge mr-1.5"></i><span data-i18n="nav.dashboard"></span>
               </a>
               <a href="{% url 'schedule:weekly' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'schedule' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-calendar-week mr-1.5"></i>Emploi du temps
+                <i class="fa-solid fa-calendar-week mr-1.5"></i><span data-i18n="nav.schedule"></span>
               </a>
               <a href="{% url 'academics:grades' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'grades' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-chart-line mr-1.5"></i>Notes de mes enfants
+                <i class="fa-solid fa-chart-line mr-1.5"></i><span data-i18n="nav.grades_children"></span>
               </a>
               {% with first_child=user.parent_profile.children.first %}
               {% if first_child %}
               <a href="{% url 'attendance:student_absences' first_child.id %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'attendance' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-user-clock mr-1.5"></i>Absences de mes enfants
+                <i class="fa-solid fa-user-clock mr-1.5"></i><span data-i18n="nav.absences_children"></span>
               </a>
               <a href="{% url 'vie_scolaire:student_retards' first_child.id %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'vie_scolaire' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-clock mr-1.5"></i>Retards de mes enfants
+                <i class="fa-solid fa-clock mr-1.5"></i><span data-i18n="nav.retards"></span> de mes enfants
               </a>
               {% endif %}
               {% endwith %}
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                <i class="fa-solid fa-envelope mr-1.5"></i><span data-i18n="nav.messaging"></span>
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
               <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+                <i class="fa-solid fa-folder-open mr-1.5"></i><span data-i18n="nav.drive"></span>
               </a>
             {% elif user.is_admin %}
               <a href="{% url 'users:dashboard_admin' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
-                <i class="fa-solid fa-gauge mr-1.5"></i>Tableau de bord
+                <i class="fa-solid fa-gauge mr-1.5"></i><span data-i18n="nav.dashboard"></span>
               </a>
               {% if user.is_superuser %}
               <a href="{% url 'users:account_management' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.url_name == 'account_management' %}text-brand-600 border-brand-500{% endif %}">
@@ -181,23 +209,23 @@
               </a>
               {% endif %}
               <a href="{% url 'schedule:weekly' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'schedule' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-calendar-week mr-1.5"></i>Emploi du temps
+                <i class="fa-solid fa-calendar-week mr-1.5"></i><span data-i18n="nav.schedule"></span>
               </a>
               <a href="{% url 'academics:evaluation_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
-                <i class="fa-solid fa-clipboard-check mr-1.5"></i>Évaluations
+                <i class="fa-solid fa-clipboard-check mr-1.5"></i><span data-i18n="nav.evaluations"></span>
               </a>
               <a href="{% url 'vie_scolaire:retard_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'vie_scolaire' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-clock mr-1.5"></i>Retards
+                <i class="fa-solid fa-clock mr-1.5"></i><span data-i18n="nav.retards"></span>
               </a>
               <a href="{% url 'messaging:inbox' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'messaging' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-envelope mr-1.5"></i>Messagerie
+                <i class="fa-solid fa-envelope mr-1.5"></i><span data-i18n="nav.messaging"></span>
                 {% if mail_unread_count %}<span class="ml-1 text-xs font-bold bg-rose-500 text-white px-1.5 py-0.5 rounded-full">{{ mail_unread_count }}</span>{% endif %}
               </a>
               <a href="{% url 'drive:personal' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500 {% if request.resolver_match.namespace == 'drive' %}text-brand-600 border-brand-500{% endif %}">
-                <i class="fa-solid fa-folder-open mr-1.5"></i>Drive
+                <i class="fa-solid fa-folder-open mr-1.5"></i><span data-i18n="nav.drive"></span>
               </a>
               <a href="{% url 'messaging:chat_list' %}" class="px-3 py-2.5 border-b-2 border-transparent text-slate-600 hover:text-brand-600 hover:border-brand-500">
-                <i class="fa-solid fa-comments mr-1.5"></i>Chat
+                <i class="fa-solid fa-comments mr-1.5"></i><span data-i18n="nav.chat"></span>
               </a>
             {% endif %}
           </div>

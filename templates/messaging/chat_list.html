@@ -6,19 +6,19 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
         <i class="fa-solid fa-comments text-brand-600"></i>
-        Chat
+        <span data-i18n="messaging.chat"></span>
     </h1>
     <a href="{% url 'messaging:new_chat' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
-        <i class="fa-solid fa-plus"></i> Nouveau chat / groupe
+        <i class="fa-solid fa-plus"></i> <span data-i18n="messaging.nouveau_chat_groupe"></span>
     </a>
 </div>
 
 <div class="mb-6 flex gap-1 text-sm">
-    <a href="{% url 'messaging:inbox' %}" class="px-3 py-2 rounded-t-lg text-slate-500 hover:text-brand-600">Mail</a>
-    <span class="px-3 py-2 rounded-t-lg bg-white border border-b-0 border-slate-200 font-semibold text-brand-600">Chat</span>
+    <a href="{% url 'messaging:inbox' %}" class="px-3 py-2 rounded-t-lg text-slate-500 hover:text-brand-600"><span data-i18n="messaging.mail"></span></a>
+    <span class="px-3 py-2 rounded-t-lg bg-white border border-b-0 border-slate-200 font-semibold text-brand-600"><span data-i18n="messaging.chat"></span></span>
 </div>
 
-<p class="text-xs text-slate-400 mb-4">Réservé au personnel (professeurs, administration, direction, vie scolaire…).</p>
+<p class="text-xs text-slate-400 mb-4"><span data-i18n="messaging.reserve_au_personnel_professeurs_adminis"></span></p>
 
 <div class="bg-white rounded-2xl card-shadow overflow-hidden divide-y divide-slate-100">
     {% for row in rows %}
@@ -53,7 +53,7 @@
     {% empty %}
         <div class="px-6 py-12 text-center text-slate-500">
             <i class="fa-solid fa-comment-slash text-3xl text-slate-300 mb-3 block"></i>
-            Aucun chat pour le moment.
+            <span data-i18n="messaging.aucun_chat_pour_le_moment"></span>
         </div>
     {% endfor %}
 </div>

@@ -1,0 +1,19 @@
+{
+  "brand.tagline": "School space",
+  "nav.logout": "Log out",
+  "nav.dashboard": "Dashboard",
+  "nav.schedule": "Timetable",
+  "nav.evaluations": "Evaluations",
+  "nav.evaluation_new": "New evaluation",
+  "nav.retards": "Lateness",
+  "nav.messaging": "Messages",
+  "nav.drive": "Drive",
+  "nav.chat": "Chat",
+  "nav.grades": "My grades",
+  "nav.grades_children": "My children's grades",
+  "nav.absences": "My absences",
+  "nav.absences_children": "My children's absences",
+  "nav.retards_mine": "My lateness",
+  "nav.retards_children": "My children's lateness",
+  "lang.selector_label": "Language"
+}

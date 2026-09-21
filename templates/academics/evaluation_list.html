@@ -7,40 +7,40 @@
     <div>
         <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <span class="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-clipboard-check"></i></span>
-            Évaluations
+            <span data-i18n="academics.evaluations"></span>
         </h1>
-        <p class="text-slate-500 text-sm mt-1">Toutes les évaluations que vous avez créées.</p>
+        <p class="text-slate-500 text-sm mt-1"><span data-i18n="academics.toutes_les_evaluations_que_vous_avez_cre"></span></p>
     </div>
     <a href="{% url 'academics:evaluation_create' %}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium shadow-sm">
-        <i class="fa-solid fa-plus"></i> Nouvelle évaluation
+        <i class="fa-solid fa-plus"></i> <span data-i18n="academics.nouvelle_evaluation"></span>
     </a>
 </div>
 
 <form method="get" class="bg-white rounded-2xl card-shadow p-4 mb-5 flex flex-wrap gap-3 items-end">
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Matière</label>
+        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="academics.matiere"></span></label>
         <select name="subject" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-            <option value="">Toutes</option>
+            <option value=""><span data-i18n="academics.toutes"></span></option>
             {% for s in subjects %}
                 <option value="{{ s.id }}" {% if filters.subject == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>
             {% endfor %}
         </select>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Classe</label>
+        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="academics.classe"></span></label>
         <select name="class_group" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white">
-            <option value="">Toutes</option>
+            <option value=""><span data-i18n="academics.toutes"></span></option>
             {% for c in class_groups %}
                 <option value="{{ c.id }}" {% if filters.class_group == c.id|stringformat:"s" %}selected{% endif %}>{{ c }}</option>
             {% endfor %}
         </select>
     </div>
     <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Recherche</label>
-        <input type="text" name="q" value="{{ filters.q }}" placeholder="Titre…" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
+        <label class="block text-xs font-semibold text-slate-500 mb-1"><span data-i18n="academics.recherche"></span></label>
+        <input type="text" name="q" value="{{ filters.q }}" data-i18n-attr="placeholder:academics.ex_titre" class="px-3 py-2 border border-slate-300 rounded-lg text-sm">
     </div>
     <button type="submit" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900">
-        <i class="fa-solid fa-filter mr-1"></i>Filtrer
+        <i class="fa-solid fa-filter mr-1"></i><span data-i18n="academics.filtrer"></span>
     </button>
 </form>
 
@@ -49,13 +49,13 @@
         <table class="w-full text-sm">
             <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                 <tr>
-                    <th class="text-left px-6 py-3">Titre</th>
-                    <th class="text-left px-6 py-3">Matière</th>
-                    <th class="text-left px-6 py-3">Classe</th>
-                    <th class="text-left px-6 py-3">Trimestre</th>
-                    <th class="text-left px-6 py-3">Date</th>
-                    <th class="text-left px-6 py-3">Coef.</th>
-                    <th class="text-right px-6 py-3">Action</th>
+                    <th class="text-left px-6 py-3"><span data-i18n="academics.titre"></span></th>
+                    <th class="text-left px-6 py-3"><span data-i18n="academics.matiere"></span></th>
+                    <th class="text-left px-6 py-3"><span data-i18n="academics.classe"></span></th>
+                    <th class="text-left px-6 py-3"><span data-i18n="academics.trimestre"></span></th>
+                    <th class="text-left px-6 py-3"><span data-i18n="academics.date"></span></th>
+                    <th class="text-left px-6 py-3"><span data-i18n="academics.coef"></span></th>
+                    <th class="text-right px-6 py-3"><span data-i18n="academics.action"></span></th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -73,14 +73,14 @@
                         <td class="px-6 py-4 text-slate-700 font-semibold">{{ e.coefficient }}</td>
                         <td class="px-6 py-4 text-right">
                             <a href="{% url 'academics:evaluation_entry' e.id %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-brand-50 text-brand-700 rounded-md hover:bg-brand-100 font-medium">
-                                <i class="fa-solid fa-pen"></i> Saisir
+                                <i class="fa-solid fa-pen"></i> <span data-i18n="academics.saisir"></span>
                             </a>
                         </td>
                     </tr>
                 {% empty %}
                     <tr><td colspan="7" class="px-6 py-16 text-center text-slate-500">
                         <i class="fa-solid fa-inbox text-4xl text-slate-300 mb-3 block"></i>
-                        Aucune évaluation. Créez-en une pour commencer.
+                        <span data-i18n="academics.aucune_evaluation_creez_en_une_pour_comm"></span>
                     </td></tr>
                 {% endfor %}
             </tbody>

@@ -1,0 +1,14 @@
+{
+  "ajoutez_des_seances_depuis_l_administrat": "Add sessions from the Django admin to see them appear here.",
+  "aucune_seance_planifiee": "No session scheduled.",
+  "classe": "Class",
+  "faire_l_appel": "Take attendance",
+  "filtrer": "Filter",
+  "professeur": "Teacher",
+  "reset": "Reset",
+  "salle": "Room",
+  "semaine_en_cours": "Current week",
+  "survolez_une_carte_pour_voir_le_detail_l": "Hover over a card to see the details. Colored sessions are grouped by subject.",
+  "tous": "— All —",
+  "toutes": "— All —"
+}

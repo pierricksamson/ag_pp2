@@ -5,27 +5,27 @@
 {% block content %}
 <div class="card">
     <h2>Bienvenue, {{ user.get_full_name }}</h2>
-    <p>Vous etes connecte en tant que <strong>{{ user.get_role_display }}</strong>.</p>
+    <p><span data-i18n="users.vous_etes_connecte_en_tant_que"></span> <strong>{{ user.get_role_display }}</strong>.</p>
 </div>
 
 <div class="card">
-    <h2>Mon profil</h2>
+    <h2><span data-i18n="users.mon_profil"></span></h2>
     {% if profile %}
         <table>
-            <tr><th>Lien de parente</th><td>{{ profile.get_relation_display }}</td></tr>
-            <tr><th>Profession</th><td>{{ profile.occupation|default:"-" }}</td></tr>
-            <tr><th>Email</th><td>{{ user.email }}</td></tr>
+            <tr><th><span data-i18n="users.lien_de_parente"></span></th><td>{{ profile.get_relation_display }}</td></tr>
+            <tr><th><span data-i18n="users.profession"></span></th><td>{{ profile.occupation|default:"-" }}</td></tr>
+            <tr><th><span data-i18n="users.email"></span></th><td>{{ user.email }}</td></tr>
         </table>
     {% else %}
-        <p>Aucun profil parent associe.</p>
+        <p><span data-i18n="users.aucun_profil_parent_associe"></span></p>
     {% endif %}
 </div>
 <div class="card">
-    <h2>Vie scolaire de mes enfants</h2>
+    <h2><span data-i18n="users.vie_scolaire_de_mes_enfants"></span></h2>
     {% if children_stats %}
         <table>
             <thead>
-                <tr><th>Enfant</th><th>Absences non justifiées</th><th>Retards en attente</th></tr>
+                <tr><th><span data-i18n="users.enfant"></span></th><th><span data-i18n="users.absences_non_justifiees"></span></th><th><span data-i18n="users.retards_en_attente"></span></th></tr>
             </thead>
             <tbody>
                 {% for row in children_stats %}
@@ -38,15 +38,15 @@
             </tbody>
         </table>
     {% else %}
-        <p>Aucune donnée disponible.</p>
+        <p><span data-i18n="users.aucune_donnee_disponible"></span></p>
     {% endif %}
 </div>
 <div class="card">
-    <h2>Mes enfants</h2>
+    <h2><span data-i18n="users.mes_enfants"></span></h2>
     {% if children %}
         <table>
             <thead>
-                <tr><th>Nom</th><th>Numero etudiant</th><th>Classe</th></tr>
+                <tr><th><span data-i18n="users.nom"></span></th><th><span data-i18n="users.numero_etudiant"></span></th><th><span data-i18n="users.classe"></span></th></tr>
             </thead>
             <tbody>
                 {% for c in children %}
@@ -59,7 +59,7 @@
             </tbody>
         </table>
     {% else %}
-        <p>Aucun enfant n'est actuellement rattache a votre compte.</p>
+        <p><span data-i18n="users.aucun_enfant_n_est_actuellement_rattache"></span></p>
     {% endif %}
 </div>
 {% endblock %}

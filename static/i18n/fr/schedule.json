@@ -1,0 +1,14 @@
+{
+  "ajoutez_des_seances_depuis_l_administrat": "Ajoutez des séances depuis l'administration Django pour les voir apparaître ici.",
+  "aucune_seance_planifiee": "Aucune séance planifiée.",
+  "classe": "Classe",
+  "faire_l_appel": "Faire l'appel",
+  "filtrer": "Filtrer",
+  "professeur": "Professeur",
+  "reset": "Reset",
+  "salle": "Salle",
+  "semaine_en_cours": "Semaine en cours",
+  "survolez_une_carte_pour_voir_le_detail_l": "Survolez une carte pour voir le détail. Les séances colorées sont regroupées par matière.",
+  "tous": "— Tous —",
+  "toutes": "— Toutes —"
+}

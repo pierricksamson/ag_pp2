@@ -1,0 +1,22 @@
+{
+  "action": "Action",
+  "aucun_fichier_pour_le_moment": "No file yet.",
+  "definissez_l_espace_de_stockage_en_mo_au": "Set the storage space (in MB) allowed for each role.",
+  "depose_le": "Uploaded on",
+  "depose_par": "Uploaded by",
+  "enregistrer_les_quotas": "Save quotas",
+  "envoyer_un_pdf": "Upload a PDF",
+  "espace_utilise": "Space used",
+  "fichier": "File",
+  "fichiers_pdf_uniquement": "PDF files only.",
+  "les_fichiers_deposes_ici_comptent_dans_v": "Files uploaded here count towards your own quota.",
+  "mo": "MB",
+  "mon_drive": "My Drive",
+  "quotas_du_drive": "Drive quotas",
+  "retour_a_mon_drive": "Back to my Drive",
+  "retour_au_tableau_de_bord": "Back to the dashboard",
+  "supprimer": "Delete",
+  "taille": "Size",
+  "valeur_par_defaut": "(default value)",
+  "votre_espace_personnel_utilise": "Your personal space used"
+}
